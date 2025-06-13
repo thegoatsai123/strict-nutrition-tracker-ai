@@ -4,6 +4,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthGuard } from "@/components/AuthGuard";
+import { Header } from "@/components/Layout/Header";
 import Index from "./pages/Index";
 import LogFood from "./pages/LogFood";
 import Dashboard from "./pages/Dashboard";
@@ -33,16 +35,50 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
+          {/* Public routes */}
           <Route path="/" element={<Landing />} />
-          <Route path="/home" element={<Index />} />
           <Route path="/signin" element={<SignIn />} />
           <Route path="/signup" element={<SignUp />} />
-          <Route path="/log-food" element={<LogFood />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/recipes" element={<Recipes />} />
-          <Route path="/community" element={<Community />} />
-          <Route path="/settings" element={<Settings />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          
+          {/* Protected routes */}
+          <Route path="/home" element={
+            <AuthGuard>
+              <Header />
+              <Index />
+            </AuthGuard>
+          } />
+          <Route path="/log-food" element={
+            <AuthGuard>
+              <Header />
+              <LogFood />
+            </AuthGuard>
+          } />
+          <Route path="/dashboard" element={
+            <AuthGuard>
+              <Header />
+              <Dashboard />
+            </AuthGuard>
+          } />
+          <Route path="/recipes" element={
+            <AuthGuard>
+              <Header />
+              <Recipes />
+            </AuthGuard>
+          } />
+          <Route path="/community" element={
+            <AuthGuard>
+              <Header />
+              <Community />
+            </AuthGuard>
+          } />
+          <Route path="/settings" element={
+            <AuthGuard>
+              <Header />
+              <Settings />
+            </AuthGuard>
+          } />
+          
+          {/* Catch all route */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

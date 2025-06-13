@@ -12,27 +12,16 @@ import {
 const USDA_BASE_URL = 'https://api.nal.usda.gov/fdc/v1';
 const SPOONACULAR_BASE_URL = 'https://api.spoonacular.com/recipes';
 
+// Use the provided API keys directly
+const USDA_API_KEY = 'glbyn2qCxX6HNHQMisrmGS74xvZc5s197eaCUkVl';
+const SPOONACULAR_API_KEY = '202cf1760ed644b1b7153fda3acf4cbe';
+
 class ApiService {
-  private usdaApiKey: string;
-  private spoonacularApiKey: string;
-
-  constructor() {
-    this.usdaApiKey = import.meta.env.VITE_USDA_API_KEY;
-    this.spoonacularApiKey = import.meta.env.VITE_SPOONACULAR_API_KEY;
-
-    if (!this.usdaApiKey) {
-      throw new Error('USDA API key is required. Please set VITE_USDA_API_KEY environment variable.');
-    }
-    if (!this.spoonacularApiKey) {
-      throw new Error('Spoonacular API key is required. Please set VITE_SPOONACULAR_API_KEY environment variable.');
-    }
-  }
-
   // USDA FoodData Central API methods
   async searchFoods(request: IUSDASearchRequest): Promise<IApiResponse<IUSDASearchResponse>> {
     try {
       const params = new URLSearchParams({
-        api_key: this.usdaApiKey,
+        api_key: USDA_API_KEY,
         query: request.query,
         pageSize: (request.pageSize || 25).toString(),
         pageNumber: (request.pageNumber || 1).toString(),
@@ -76,7 +65,7 @@ class ApiService {
 
   async getFoodById(fdcId: number): Promise<IApiResponse<IFoodItem>> {
     try {
-      const response = await fetch(`${USDA_BASE_URL}/food/${fdcId}?api_key=${this.usdaApiKey}`, {
+      const response = await fetch(`${USDA_BASE_URL}/food/${fdcId}?api_key=${USDA_API_KEY}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -101,43 +90,11 @@ class ApiService {
     }
   }
 
-  async getFoodsByIds(fdcIds: number[]): Promise<IApiResponse<IFoodItem[]>> {
-    try {
-      const response = await fetch(`${USDA_BASE_URL}/foods?api_key=${this.usdaApiKey}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          fdcIds,
-          format: 'abridged',
-          nutrients: [203, 204, 205, 208, 269, 291, 301, 303, 307, 401] // Essential nutrients
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`USDA API error: ${response.status} ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      return {
-        success: true,
-        data
-      };
-    } catch (error) {
-      console.error('Error fetching foods by IDs:', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error occurred'
-      };
-    }
-  }
-
   // Spoonacular API methods
   async searchRecipes(request: ISpoonacularSearchRequest): Promise<IApiResponse<ISpoonacularSearchResponse>> {
     try {
       const params = new URLSearchParams({
-        apiKey: this.spoonacularApiKey,
+        apiKey: SPOONACULAR_API_KEY,
         query: request.query,
         number: (request.number || 12).toString(),
         offset: (request.offset || 0).toString(),
@@ -183,7 +140,7 @@ class ApiService {
   async getRecipeById(id: number): Promise<IApiResponse<IRecipe>> {
     try {
       const params = new URLSearchParams({
-        apiKey: this.spoonacularApiKey,
+        apiKey: SPOONACULAR_API_KEY,
         includeNutrition: 'true'
       });
 
@@ -218,7 +175,7 @@ class ApiService {
   ): Promise<IApiResponse<{ recipes: IRecipe[] }>> {
     try {
       const params = new URLSearchParams({
-        apiKey: this.spoonacularApiKey,
+        apiKey: SPOONACULAR_API_KEY,
         number: number.toString(),
         include_nutrition: 'true'
       });
@@ -247,40 +204,6 @@ class ApiService {
       };
     } catch (error) {
       console.error('Error fetching random recipes:', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error occurred'
-      };
-    }
-  }
-
-  // Food Recognition ML API
-  async recognizeFood(imageFile: File): Promise<IApiResponse<any>> {
-    try {
-      const formData = new FormData();
-      formData.append('image', imageFile);
-
-      const mlApiUrl = import.meta.env.VITE_ML_API_URL;
-      if (!mlApiUrl) {
-        throw new Error('ML API URL is not configured');
-      }
-
-      const response = await fetch(`${mlApiUrl}/predict`, {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error(`ML API error: ${response.status} ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      return {
-        success: true,
-        data
-      };
-    } catch (error) {
-      console.error('Error recognizing food:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error occurred'
