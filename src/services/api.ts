@@ -1,3 +1,4 @@
+
 import { 
   IUSDASearchRequest, 
   IUSDASearchResponse, 
@@ -7,57 +8,35 @@ import {
   IRecipe,
   IApiResponse
 } from '../types';
-
-const USDA_BASE_URL = 'https://api.nal.usda.gov/fdc/v1';
-const SPOONACULAR_BASE_URL = 'https://api.spoonacular.com/recipes';
-
-// Use the provided API keys directly
-const USDA_API_KEY = 'glbyn2qCxX6HNHQMisrmGS74xvZc5s197eaCUkVl';
-const SPOONACULAR_API_KEY = '202cf1760ed644b1b7153fda3acf4cbe';
+import { supabase } from '@/integrations/supabase/client';
 
 export class ApiService {
-  private spoonacularApiKey = 'cf1760ed644b1b7153fda3acf4cbe';
-  private usdaApiKey = 'glbyn2qCxX6HNHQMisrmGS74xvZc5s197eaCUkVl';
-  private spoonacularBaseUrl = 'https://api.spoonacular.com';
-  private usdaBaseUrl = 'https://api.nal.usda.gov/fdc/v1';
+  private async callNutritionAPI(action: string, params: any): Promise<any> {
+    const { data, error } = await supabase.functions.invoke('nutrition-api', {
+      body: { action, ...params }
+    });
+
+    if (error) {
+      console.error('Edge function error:', error);
+      throw new Error(error.message || 'API request failed');
+    }
+
+    return data;
+  }
 
   // USDA FoodData Central API methods
   async searchFoods(request: IUSDASearchRequest): Promise<IApiResponse<IUSDASearchResponse>> {
     try {
-      const params = new URLSearchParams({
-        api_key: USDA_API_KEY,
+      const response = await this.callNutritionAPI('searchFoods', {
         query: request.query,
-        pageSize: (request.pageSize || 25).toString(),
-        pageNumber: (request.pageNumber || 1).toString(),
+        pageSize: request.pageSize || 25,
+        pageNumber: request.pageNumber || 1,
         sortBy: request.sortBy || 'dataType.keyword',
-        sortOrder: request.sortOrder || 'asc'
+        sortOrder: request.sortOrder || 'asc',
+        brandOwner: request.brandOwner
       });
 
-      if (request.brandOwner) {
-        params.append('brandOwner', request.brandOwner);
-      }
-
-      const response = await fetch(`${USDA_BASE_URL}/foods/search?${params}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`USDA API error: ${response.status} ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      return {
-        success: true,
-        data: {
-          totalHits: data.totalHits,
-          currentPage: data.currentPage,
-          totalPages: data.totalPages,
-          foods: data.foods
-        }
-      };
+      return response;
     } catch (error) {
       console.error('Error searching foods:', error);
       return {
@@ -69,22 +48,8 @@ export class ApiService {
 
   async getFoodById(fdcId: number): Promise<IApiResponse<IFoodItem>> {
     try {
-      const response = await fetch(`${USDA_BASE_URL}/food/${fdcId}?api_key=${USDA_API_KEY}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`USDA API error: ${response.status} ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      return {
-        success: true,
-        data
-      };
+      const response = await this.callNutritionAPI('getFoodById', { fdcId });
+      return response;
     } catch (error) {
       console.error('Error fetching food by ID:', error);
       return {
@@ -97,41 +62,17 @@ export class ApiService {
   // Spoonacular API methods
   async searchRecipes(request: ISpoonacularSearchRequest): Promise<IApiResponse<ISpoonacularSearchResponse>> {
     try {
-      const params = new URLSearchParams({
-        apiKey: SPOONACULAR_API_KEY,
+      const response = await this.callNutritionAPI('searchRecipes', {
         query: request.query,
-        number: (request.number || 12).toString(),
-        offset: (request.offset || 0).toString(),
-        addRecipeInformation: 'true',
-        addRecipeNutrition: 'true'
+        number: request.number || 12,
+        offset: request.offset || 0,
+        diet: request.diet,
+        excludeIngredients: request.excludeIngredients,
+        intolerances: request.intolerances,
+        type: request.type
       });
 
-      if (request.diet) params.append('diet', request.diet);
-      if (request.excludeIngredients) params.append('excludeIngredients', request.excludeIngredients);
-      if (request.intolerances) params.append('intolerances', request.intolerances);
-      if (request.type) params.append('type', request.type);
-
-      const response = await fetch(`${SPOONACULAR_BASE_URL}/complexSearch?${params}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`Spoonacular API error: ${response.status} ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      return {
-        success: true,
-        data: {
-          results: data.results,
-          offset: data.offset,
-          number: data.number,
-          totalResults: data.totalResults
-        }
-      };
+      return response;
     } catch (error) {
       console.error('Error searching recipes:', error);
       return {
@@ -143,27 +84,8 @@ export class ApiService {
 
   async getRecipeById(id: number): Promise<IApiResponse<IRecipe>> {
     try {
-      const params = new URLSearchParams({
-        apiKey: SPOONACULAR_API_KEY,
-        includeNutrition: 'true'
-      });
-
-      const response = await fetch(`${SPOONACULAR_BASE_URL}/${id}/information?${params}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`Spoonacular API error: ${response.status} ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      return {
-        success: true,
-        data
-      };
+      const response = await this.callNutritionAPI('getRecipeById', { id });
+      return response;
     } catch (error) {
       console.error('Error fetching recipe by ID:', error);
       return {
@@ -178,34 +100,8 @@ export class ApiService {
     number: number = 6
   ): Promise<IApiResponse<{ recipes: IRecipe[] }>> {
     try {
-      const params = new URLSearchParams({
-        apiKey: SPOONACULAR_API_KEY,
-        number: number.toString(),
-        include_nutrition: 'true'
-      });
-
-      if (tags && tags.length > 0) {
-        params.append('tags', tags.join(','));
-      }
-
-      const response = await fetch(`${SPOONACULAR_BASE_URL}/random?${params}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`Spoonacular API error: ${response.status} ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      return {
-        success: true,
-        data: {
-          recipes: data.recipes
-        }
-      };
+      const response = await this.callNutritionAPI('getRandomRecipes', { tags, number });
+      return response;
     } catch (error) {
       console.error('Error fetching random recipes:', error);
       return {
@@ -217,24 +113,8 @@ export class ApiService {
 
   async recognizeFood(file: File): Promise<IApiResponse<{ predictions: Array<{ className: string; confidence: number }> }>> {
     try {
-      // For now, we'll simulate food recognition since we don't have a dedicated image recognition API
-      // In a real implementation, you might use Google Vision API, Clarifai, or another service
-      
-      // Simple mock response for demonstration
-      const mockPredictions = [
-        { className: 'apple', confidence: 0.85 },
-        { className: 'banana', confidence: 0.15 }
-      ];
-
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      return {
-        success: true,
-        data: {
-          predictions: mockPredictions
-        }
-      };
+      const response = await this.callNutritionAPI('recognizeFood', {});
+      return response;
     } catch (error) {
       console.error('Food recognition error:', error);
       return {
