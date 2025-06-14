@@ -5,42 +5,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { dummyRecipes, dummyRecipeCategories } from '@/data/dummyData';
 
 const Recipes = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
-  const featuredRecipes = [
-    {
-      id: 1,
-      title: "Grilled Chicken with Quinoa",
-      description: "High-protein meal perfect for muscle building",
-      calories: 420,
-      protein: 35,
-      cookTime: "25 min",
-      difficulty: "Easy",
-      tags: ["High Protein", "Gluten Free"]
-    },
-    {
-      id: 2,
-      title: "Mediterranean Bowl",
-      description: "Fresh vegetables with olive oil and feta",
-      calories: 380,
-      protein: 18,
-      cookTime: "15 min",
-      difficulty: "Easy",
-      tags: ["Vegetarian", "Mediterranean"]
-    },
-    {
-      id: 3,
-      title: "Salmon with Sweet Potato",
-      description: "Omega-3 rich fish with complex carbs",
-      calories: 450,
-      protein: 32,
-      cookTime: "30 min",
-      difficulty: "Medium",
-      tags: ["Heart Healthy", "Omega-3"]
-    }
-  ];
+  const filteredRecipes = dummyRecipes.filter(recipe =>
+    recipe.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    recipe.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    recipe.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -67,7 +41,7 @@ const Recipes = () => {
         <div className="mb-8">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Featured Recipes</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featuredRecipes.map((recipe) => (
+            {filteredRecipes.map((recipe) => (
               <Card key={recipe.id} className="hover:shadow-md transition-shadow">
                 <CardHeader>
                   <CardTitle className="text-lg">{recipe.title}</CardTitle>
@@ -108,22 +82,12 @@ const Recipes = () => {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-3">
-                <Button variant="outline" className="h-auto py-4 flex-col">
-                  <span className="font-medium">High Protein</span>
-                  <span className="text-xs text-gray-600">45+ recipes</span>
-                </Button>
-                <Button variant="outline" className="h-auto py-4 flex-col">
-                  <span className="font-medium">Low Carb</span>
-                  <span className="text-xs text-gray-600">32+ recipes</span>
-                </Button>
-                <Button variant="outline" className="h-auto py-4 flex-col">
-                  <span className="font-medium">Vegetarian</span>
-                  <span className="text-xs text-gray-600">28+ recipes</span>
-                </Button>
-                <Button variant="outline" className="h-auto py-4 flex-col">
-                  <span className="font-medium">Quick Meals</span>
-                  <span className="text-xs text-gray-600">38+ recipes</span>
-                </Button>
+                {dummyRecipeCategories.map((category, index) => (
+                  <Button key={index} variant="outline" className="h-auto py-4 flex-col">
+                    <span className="font-medium">{category.name}</span>
+                    <span className="text-xs text-gray-600">{category.count}+ recipes</span>
+                  </Button>
+                ))}
               </div>
             </CardContent>
           </Card>

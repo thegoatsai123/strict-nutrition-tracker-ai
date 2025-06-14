@@ -1,46 +1,13 @@
 
-import { useState } from 'react';
 import Navbar from '@/components/Layout/Navbar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ArrowUp, User } from 'lucide-react';
+import { dummyCommunityPosts, dummyCommunityStats, dummyFeaturedMember } from '@/data/dummyData';
 
 const Community = () => {
-  const [posts] = useState([
-    {
-      id: 1,
-      author: { name: "Sarah Johnson", avatar: "/api/placeholder/32/32" },
-      title: "Lost 20 pounds using this app!",
-      content: "Just wanted to share my success story. The food tracking features helped me stay consistent...",
-      category: "progress",
-      likes: 24,
-      comments: 8,
-      timeAgo: "2 hours ago"
-    },
-    {
-      id: 2,
-      author: { name: "Mike Chen", avatar: "/api/placeholder/32/32" },
-      title: "Best high-protein breakfast ideas?",
-      content: "Looking for some new breakfast recipes that are high in protein. What are your favorites?",
-      category: "recipes",
-      likes: 12,
-      comments: 15,
-      timeAgo: "4 hours ago"
-    },
-    {
-      id: 3,
-      author: { name: "Emma Davis", avatar: "/api/placeholder/32/32" },
-      title: "How do you track restaurant meals?",
-      content: "I'm struggling with tracking calories when eating out. Any tips?",
-      category: "questions",
-      likes: 8,
-      comments: 12,
-      timeAgo: "6 hours ago"
-    }
-  ]);
-
   const getCategoryColor = (category: string) => {
     switch (category) {
       case 'progress': return 'bg-green-100 text-green-800';
@@ -70,7 +37,7 @@ const Community = () => {
                 </div>
               </CardHeader>
               <CardContent className="space-y-6">
-                {posts.map((post) => (
+                {dummyCommunityPosts.map((post) => (
                   <div key={post.id} className="border-b border-gray-200 last:border-b-0 pb-6 last:pb-0">
                     <div className="flex items-start space-x-4">
                       <Avatar>
@@ -117,15 +84,15 @@ const Community = () => {
               <CardContent className="space-y-4">
                 <div className="flex justify-between">
                   <span className="text-sm font-medium">Active Members</span>
-                  <span className="text-sm font-bold">12,458</span>
+                  <span className="text-sm font-bold">{dummyCommunityStats.activeMembers.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm font-medium">Posts This Week</span>
-                  <span className="text-sm font-bold">342</span>
+                  <span className="text-sm font-bold">{dummyCommunityStats.postsThisWeek}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm font-medium">Success Stories</span>
-                  <span className="text-sm font-bold">1,289</span>
+                  <span className="text-sm font-bold">{dummyCommunityStats.successStories.toLocaleString()}</span>
                 </div>
               </CardContent>
             </Card>
@@ -161,17 +128,18 @@ const Community = () => {
               <CardContent>
                 <div className="flex items-center space-x-3 mb-3">
                   <Avatar>
+                    <AvatarImage src={dummyFeaturedMember.avatar} />
                     <AvatarFallback>
                       <User className="w-4 h-4" />
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <h4 className="font-medium">Alex Rodriguez</h4>
-                    <p className="text-sm text-gray-600">Lost 45 lbs</p>
+                    <h4 className="font-medium">{dummyFeaturedMember.name}</h4>
+                    <p className="text-sm text-gray-600">{dummyFeaturedMember.achievement}</p>
                   </div>
                 </div>
                 <p className="text-sm text-gray-600 mb-3">
-                  "This community kept me motivated throughout my entire journey..."
+                  "{dummyFeaturedMember.story}"
                 </p>
                 <Button variant="outline" size="sm" className="w-full">
                   Read Story

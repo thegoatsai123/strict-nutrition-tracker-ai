@@ -20,10 +20,18 @@ const Index = () => {
 
   const loadFeaturedRecipes = async () => {
     try {
-      const response: IApiResponse<{ recipes: IRecipe[] }> = await apiService.getRandomRecipes(['healthy', 'quick'], 3);
-      if (response.success && response.data) {
-        setFeaturedRecipes(response.data.recipes);
-      }
+      // Simulate API loading time
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Use dummy data from our data file
+      const { dummyRecipes } = await import('@/data/dummyData');
+      const featuredRecipeData = dummyRecipes.slice(0, 3).map(recipe => ({
+        ...recipe,
+        spoonacularId: recipe.id,
+        healthScore: Math.floor(Math.random() * 30) + 70 // Random health score between 70-100
+      }));
+      
+      setFeaturedRecipes(featuredRecipeData);
     } catch (error) {
       console.error('Error loading featured recipes:', error);
     } finally {
