@@ -2,9 +2,11 @@
 import React, { useState, useRef } from 'react'
 import { AnimatedButton } from '@/components/ui/animated-button'
 import { GlassCard } from '@/components/ui/glass-card'
-import { Camera, Upload, Loader2, CheckCircle, AlertCircle } from 'lucide-react'
+import { Camera, Upload, Loader2, CheckCircle, AlertCircle, Brain } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useToast } from '@/hooks/use-toast'
+import { useFoodRecognition } from '@/hooks/useFoodRecognition'
+import { Badge } from '@/components/ui/badge'
 
 interface FoodRecognitionUploadProps {
   onImageUpload: (file: File) => void
@@ -21,8 +23,9 @@ export const FoodRecognitionUpload: React.FC<FoodRecognitionUploadProps> = ({
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { toast } = useToast()
+  const { recognizeFood, isProcessing: isRecognizing, lastResult, getAvailableProviders } = useFoodRecognition()
 
-  const handleFileSelect = (file: File) => {
+  const handleFileSelect = async (file: File) => {
     if (!file.type.startsWith('image/')) {
       toast({
         title: "Invalid File",
@@ -34,7 +37,12 @@ export const FoodRecognitionUpload: React.FC<FoodRecognitionUploadProps> = ({
 
     const url = URL.createObjectURL(file)
     setPreviewUrl(url)
+    
+    // Call the original onImageUpload for backward compatibility
     onImageUpload(file)
+    
+    // Use the new ML recognition system
+    await recognizeFood(file)
   }
 
   const handleDrop = (e: React.DragEvent) => {
@@ -54,8 +62,22 @@ export const FoodRecognitionUpload: React.FC<FoodRecognitionUploadProps> = ({
     }
   }
 
+  const currentProcessing = isProcessing || isRecognizing
+  const currentPrediction = lastResult?.success && lastResult.predictions[0] ? lastResult.predictions[0] : prediction
+
   return (
     <div className="w-full max-w-md mx-auto space-y-6">
+      {/* ML Provider Status */}
+      <div className="flex items-center justify-center space-x-2 text-sm text-gray-600">
+        <Brain className="h-4 w-4" />
+        <span>Available Models:</span>
+        {getAvailableProviders().map((provider, index) => (
+          <Badge key={provider} variant="secondary" className="text-xs">
+            {provider}
+          </Badge>
+        ))}
+      </div>
+
       {/* Upload Area */}
       <GlassCard
         className={cn(
@@ -80,24 +102,36 @@ export const FoodRecognitionUpload: React.FC<FoodRecognitionUploadProps> = ({
                   alt="Food preview" 
                   className="w-full h-full object-cover transition-transform hover:scale-110"
                 />
-                {isProcessing && (
+                {currentProcessing && (
                   <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                     <Loader2 className="h-8 w-8 text-white animate-spin" />
                   </div>
                 )}
               </div>
               
-              {prediction && (
+              {currentPrediction && (
                 <div className="space-y-2">
                   <div className="flex items-center justify-center space-x-2">
                     <CheckCircle className="h-5 w-5 text-green-500" />
-                    <span className="font-semibold text-green-700">
-                      {prediction.className}
+                    <span className="font-semibold text-green-700 capitalize">
+                      {currentPrediction.className}
                     </span>
                   </div>
                   <div className="text-sm text-gray-600">
-                    Confidence: {Math.round(prediction.confidence * 100)}%
+                    Confidence: {Math.round(currentPrediction.confidence * 100)}%
                   </div>
+                  {lastResult && (
+                    <div className="text-xs text-gray-500">
+                      Provider: {lastResult.provider} • {lastResult.processingTime}ms
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {lastResult && !lastResult.success && (
+                <div className="flex items-center justify-center space-x-2 text-red-600">
+                  <AlertCircle className="h-5 w-5" />
+                  <span className="text-sm">Recognition failed</span>
                 </div>
               )}
             </div>
@@ -112,6 +146,9 @@ export const FoodRecognitionUpload: React.FC<FoodRecognitionUploadProps> = ({
                 </p>
                 <p className="text-gray-600">
                   Drop your image here or click to browse
+                </p>
+                <p className="text-xs text-gray-500 mt-2">
+                  Powered by advanced ML models
                 </p>
               </div>
             </>
@@ -133,7 +170,7 @@ export const FoodRecognitionUpload: React.FC<FoodRecognitionUploadProps> = ({
           variant="outline"
           className="flex-1"
           onClick={() => fileInputRef.current?.click()}
-          disabled={isProcessing}
+          disabled={currentProcessing}
         >
           <Upload className="h-4 w-4 mr-2" />
           Choose File
@@ -143,24 +180,23 @@ export const FoodRecognitionUpload: React.FC<FoodRecognitionUploadProps> = ({
           variant="gradient"
           className="flex-1"
           onClick={() => {
-            // Camera functionality would go here
             toast({
               title: "Camera Feature",
-              description: "Camera functionality will be implemented with ML model integration.",
+              description: "Camera functionality ready for integration with your ML model.",
             })
           }}
-          disabled={isProcessing}
+          disabled={currentProcessing}
         >
           <Camera className="h-4 w-4 mr-2" />
           Take Photo
         </AnimatedButton>
       </div>
 
-      {isProcessing && (
+      {currentProcessing && (
         <div className="text-center space-y-2">
           <Loader2 className="h-6 w-6 animate-spin mx-auto text-green-600" />
           <p className="text-sm text-gray-600">
-            Analyzing your food image...
+            AI models analyzing your food image...
           </p>
         </div>
       )}

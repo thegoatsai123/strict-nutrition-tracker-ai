@@ -1,4 +1,3 @@
-
 import { useState, useRef } from 'react';
 import { AnimatedButton } from '@/components/ui/animated-button';
 import { GlassCard } from '@/components/ui/glass-card';
@@ -13,6 +12,7 @@ import { NutritionCalculator } from '@/utils/nutrition';
 import { IFoodItem, IUSDASearchResponse, IApiResponse } from '@/types';
 import { Camera, Search, Mic, Plus, Sparkles, Brain, Zap } from 'lucide-react';
 import Navbar from '@/components/Layout/Navbar';
+import { useFoodRecognition } from '@/hooks/useFoodRecognition';
 
 const LogFood = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -24,6 +24,7 @@ const LogFood = () => {
   const [recognitionResult, setRecognitionResult] = useState<{ className: string; confidence: number } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const { recognizeFood, lastResult, getAvailableProviders } = useFoodRecognition();
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
@@ -128,38 +129,21 @@ const LogFood = () => {
     setRecognitionResult(null);
 
     try {
-      // This will be replaced with actual ML model API call
-      const response = await apiService.recognizeFood(file);
+      const result = await recognizeFood(file);
       
-      if (response.success && response.data) {
-        const topPrediction = response.data.predictions[0];
-        if (topPrediction && topPrediction.confidence > 0.5) {
+      if (result.success && result.predictions.length > 0) {
+        const topPrediction = result.predictions[0];
+        if (topPrediction.confidence > 0.5) {
           setRecognitionResult(topPrediction);
           setSearchQuery(topPrediction.className);
-          
-          toast({
-            title: "Food Recognized! 🎉",
-            description: `Detected: ${topPrediction.className} (${Math.round(topPrediction.confidence * 100)}% confidence)`
-          });
           
           setTimeout(() => {
             handleSearch();
           }, 1000);
-        } else {
-          toast({
-            title: "Low Confidence",
-            description: "Unable to confidently identify the food. Please try manual search.",
-            variant: "destructive"
-          });
         }
       }
     } catch (error) {
       console.error('Food recognition error:', error);
-      toast({
-        title: "Recognition Error",
-        description: "An error occurred while processing the image.",
-        variant: "destructive"
-      });
     } finally {
       setIsRecognizing(false);
     }
@@ -201,13 +185,15 @@ const LogFood = () => {
           <div className="mb-12 text-center">
             <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-green-100 to-blue-100 rounded-full mb-6 border border-green-200">
               <Brain className="w-4 h-4 text-green-600 mr-2" />
-              <span className="text-sm font-semibold text-green-700">AI-Powered Food Recognition</span>
+              <span className="text-sm font-semibold text-green-700">
+                ML-Powered Food Recognition ({getAvailableProviders().length} models active)
+              </span>
             </div>
             <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
               Log Your Food
             </h1>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Use advanced AI recognition, voice commands, or manual search to track your nutrition
+              Use advanced ML models, voice commands, or manual search to track your nutrition
             </p>
           </div>
         </FloatingElement>
@@ -223,7 +209,7 @@ const LogFood = () => {
                 <h2 className="text-2xl font-bold text-gray-900">AI Food Recognition</h2>
               </div>
               <p className="text-gray-600 mb-6">
-                Upload a photo and let our CNN model identify your food instantly
+                Upload a photo and let our ML models identify your food instantly
               </p>
             </div>
             
@@ -290,12 +276,12 @@ const LogFood = () => {
                   onClick={() => {
                     toast({
                       title: "Pro Tip! 💡",
-                      description: "Use the AI recognition above for the best experience!",
+                      description: "Use the ML recognition above for the best experience!",
                     })
                   }}
                 >
                   <Zap className="h-4 w-4 mr-2" />
-                  Quick Tips
+                  ML Models Ready
                 </AnimatedButton>
               </div>
             </CardContent>
@@ -398,7 +384,7 @@ const LogFood = () => {
                 </div>
                 <p className="text-xl text-gray-600 mb-2">No food items found for "{searchQuery}"</p>
                 <p className="text-gray-500 mb-6">
-                  Try using different keywords, check your spelling, or use our AI recognition feature
+                  Try using different keywords, check your spelling, or use our ML recognition feature
                 </p>
                 <AnimatedButton variant="outline" onClick={() => setSearchQuery('')}>
                   Clear Search
