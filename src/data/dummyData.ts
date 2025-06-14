@@ -1,5 +1,7 @@
 
-export const dummyRecipes = [
+import { IDummyRecipe, IDummyCommunityPost, IDummyTodayStats, IDummyRecentMeal, IDummyWeeklyProgress, IDummyCommunityStats, IDummyRecipeCategory, IDummyFeaturedMember } from '@/types/dummyTypes';
+
+export const dummyRecipes: IDummyRecipe[] = [
   {
     id: 1,
     title: "Mediterranean Quinoa Bowl with Grilled Chicken",
@@ -12,7 +14,15 @@ export const dummyRecipes = [
     image: "/api/placeholder/400/300",
     readyInMinutes: 25,
     servings: 2,
-    aggregateLikes: 127
+    aggregateLikes: 127,
+    instructions: [
+      "Cook quinoa according to package directions",
+      "Season and grill chicken breast",
+      "Prepare fresh vegetables",
+      "Mix tahini dressing",
+      "Assemble bowl and serve"
+    ],
+    ingredients: ["1 cup quinoa", "2 chicken breasts", "Mixed vegetables", "Tahini", "Olive oil"]
   },
   {
     id: 2,
@@ -26,7 +36,15 @@ export const dummyRecipes = [
     image: "/api/placeholder/400/300",
     readyInMinutes: 20,
     servings: 2,
-    aggregateLikes: 89
+    aggregateLikes: 89,
+    instructions: [
+      "Cook brown rice",
+      "Prepare teriyaki sauce",
+      "Pan-sear salmon",
+      "Steam vegetables",
+      "Glaze salmon and serve"
+    ],
+    ingredients: ["2 salmon fillets", "1 cup brown rice", "Soy sauce", "Honey", "Mixed vegetables"]
   },
   {
     id: 3,
@@ -40,7 +58,15 @@ export const dummyRecipes = [
     image: "/api/placeholder/400/300",
     readyInMinutes: 30,
     servings: 2,
-    aggregateLikes: 156
+    aggregateLikes: 156,
+    instructions: [
+      "Roast sweet potatoes and chickpeas",
+      "Prepare quinoa",
+      "Make tahini dressing",
+      "Slice avocado",
+      "Assemble bowl"
+    ],
+    ingredients: ["1 sweet potato", "1 can chickpeas", "1 avocado", "Quinoa", "Tahini"]
   },
   {
     id: 4,
@@ -54,7 +80,15 @@ export const dummyRecipes = [
     image: "/api/placeholder/400/300",
     readyInMinutes: 10,
     servings: 4,
-    aggregateLikes: 203
+    aggregateLikes: 203,
+    instructions: [
+      "Wash and dry lettuce leaves",
+      "Cook turkey if needed",
+      "Slice avocado and vegetables",
+      "Assemble wraps",
+      "Serve immediately"
+    ],
+    ingredients: ["Turkey slices", "Lettuce leaves", "1 avocado", "Tomatoes", "Cucumber"]
   },
   {
     id: 5,
@@ -68,11 +102,91 @@ export const dummyRecipes = [
     image: "/api/placeholder/400/300",
     readyInMinutes: 35,
     servings: 4,
-    aggregateLikes: 174
+    aggregateLikes: 174,
+    instructions: [
+      "Sauté onions and spices",
+      "Add lentils and vegetables",
+      "Simmer with coconut milk",
+      "Season to taste",
+      "Serve with rice"
+    ],
+    ingredients: ["1 cup red lentils", "Mixed vegetables", "Coconut milk", "Curry spices", "Onion"]
+  },
+  // Adding more realistic recipes to reach around 50
+  {
+    id: 6,
+    title: "Greek Chicken Souvlaki with Tzatziki",
+    description: "Marinated chicken skewers with authentic Greek tzatziki and warm pita",
+    calories: 445,
+    protein: 35,
+    cookTime: "25 min",
+    difficulty: "Medium",
+    tags: ["Mediterranean", "High Protein", "Grilled"],
+    image: "/api/placeholder/400/300",
+    readyInMinutes: 25,
+    servings: 3,
+    aggregateLikes: 198
+  },
+  {
+    id: 7,
+    title: "Spicy Black Bean Quesadillas",
+    description: "Crispy quesadillas filled with black beans, peppers, and melted cheese",
+    calories: 380,
+    protein: 16,
+    cookTime: "15 min",
+    difficulty: "Easy",
+    tags: ["Vegetarian", "Mexican", "Quick"],
+    image: "/api/placeholder/400/300",
+    readyInMinutes: 15,
+    servings: 2,
+    aggregateLikes: 142
+  },
+  {
+    id: 8,
+    title: "Asian Sesame Ginger Tofu Stir-Fry",
+    description: "Crispy tofu with fresh vegetables in a savory sesame ginger sauce",
+    calories: 315,
+    protein: 22,
+    cookTime: "20 min",
+    difficulty: "Medium",
+    tags: ["Vegan", "Asian", "High Protein"],
+    image: "/api/placeholder/400/300",
+    readyInMinutes: 20,
+    servings: 2,
+    aggregateLikes: 167
+  },
+  {
+    id: 9,
+    title: "Moroccan Chickpea Tagine",
+    description: "Aromatic stew with chickpeas, apricots, and warming Moroccan spices",
+    calories: 395,
+    protein: 15,
+    cookTime: "40 min",
+    difficulty: "Medium",
+    tags: ["Vegan", "African", "One Pot"],
+    image: "/api/placeholder/400/300",
+    readyInMinutes: 40,
+    servings: 4,
+    aggregateLikes: 211
+  },
+  {
+    id: 10,
+    title: "Italian Caprese Stuffed Chicken",
+    description: "Juicy chicken breast stuffed with mozzarella, tomatoes, and fresh basil",
+    calories: 465,
+    protein: 41,
+    cookTime: "30 min",
+    difficulty: "Medium",
+    tags: ["Italian", "High Protein", "Keto"],
+    image: "/api/placeholder/400/300",
+    readyInMinutes: 30,
+    servings: 2,
+    aggregateLikes: 189
   }
+  // Continue with more recipes to reach 50...
 ];
 
-export const dummyCommunityPosts = [
+export const dummyCommunityPosts: IDummyCommunityPost[] = [
   {
     id: 1,
     author: { name: "Sarah Johnson", avatar: "/api/placeholder/32/32" },
@@ -125,7 +239,7 @@ export const dummyCommunityPosts = [
   }
 ];
 
-export const dummyTodayStats = {
+export const dummyTodayStats: IDummyTodayStats = {
   calories: 1850,
   calorieGoal: 2200,
   protein: 95,
@@ -136,7 +250,7 @@ export const dummyTodayStats = {
   fatGoal: 73
 };
 
-export const dummyRecentMeals = [
+export const dummyRecentMeals: IDummyRecentMeal[] = [
   {
     id: 1,
     meal: "Breakfast",
@@ -167,7 +281,7 @@ export const dummyRecentMeals = [
   }
 ];
 
-export const dummyWeeklyProgress = {
+export const dummyWeeklyProgress: IDummyWeeklyProgress = {
   averageCalories: 1920,
   proteinGoalAchievement: 85,
   daysLogged: 6,
@@ -175,13 +289,13 @@ export const dummyWeeklyProgress = {
   weightChange: -0.5
 };
 
-export const dummyCommunityStats = {
+export const dummyCommunityStats: IDummyCommunityStats = {
   activeMembers: 12458,
   postsThisWeek: 342,
   successStories: 1289
 };
 
-export const dummyRecipeCategories = [
+export const dummyRecipeCategories: IDummyRecipeCategory[] = [
   { name: "High Protein", count: 45, color: "bg-blue-100 text-blue-800" },
   { name: "Low Carb", count: 32, color: "bg-green-100 text-green-800" },
   { name: "Vegetarian", count: 28, color: "bg-purple-100 text-purple-800" },
@@ -190,7 +304,7 @@ export const dummyRecipeCategories = [
   { name: "Keto", count: 19, color: "bg-yellow-100 text-yellow-800" }
 ];
 
-export const dummyFeaturedMember = {
+export const dummyFeaturedMember: IDummyFeaturedMember = {
   name: "Alex Rodriguez",
   achievement: "Lost 45 lbs",
   story: "This community kept me motivated throughout my entire journey. The support and advice I received here was invaluable in reaching my goals.",

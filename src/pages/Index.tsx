@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AnimatedButton } from '@/components/ui/animated-button';
@@ -6,12 +5,12 @@ import { GlassCard } from '@/components/ui/glass-card';
 import { FloatingElement, ParticleBackground } from '@/components/ui/floating-elements';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { apiService } from '@/services/api';
-import { IRecipe, IApiResponse } from '@/types';
+import { IDummyRecipe } from '@/types/dummyTypes';
 import { Camera, Search, BarChart, Users, Utensils, TrendingUp, Brain, Sparkles, Zap } from 'lucide-react';
 import Navbar from '@/components/Layout/Navbar';
 
 const Index = () => {
-  const [featuredRecipes, setFeaturedRecipes] = useState<IRecipe[]>([]);
+  const [featuredRecipes, setFeaturedRecipes] = useState<IDummyRecipe[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -25,11 +24,7 @@ const Index = () => {
       
       // Use dummy data from our data file
       const { dummyRecipes } = await import('@/data/dummyData');
-      const featuredRecipeData = dummyRecipes.slice(0, 3).map(recipe => ({
-        ...recipe,
-        spoonacularId: recipe.id,
-        healthScore: Math.floor(Math.random() * 30) + 70 // Random health score between 70-100
-      }));
+      const featuredRecipeData = dummyRecipes.slice(0, 3);
       
       setFeaturedRecipes(featuredRecipeData);
     } catch (error) {
