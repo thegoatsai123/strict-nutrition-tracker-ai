@@ -1,4 +1,3 @@
-
 import { 
   IUSDASearchRequest, 
   IUSDASearchResponse, 
@@ -16,7 +15,12 @@ const SPOONACULAR_BASE_URL = 'https://api.spoonacular.com/recipes';
 const USDA_API_KEY = 'glbyn2qCxX6HNHQMisrmGS74xvZc5s197eaCUkVl';
 const SPOONACULAR_API_KEY = '202cf1760ed644b1b7153fda3acf4cbe';
 
-class ApiService {
+export class ApiService {
+  private spoonacularApiKey = 'cf1760ed644b1b7153fda3acf4cbe';
+  private usdaApiKey = 'glbyn2qCxX6HNHQMisrmGS74xvZc5s197eaCUkVl';
+  private spoonacularBaseUrl = 'https://api.spoonacular.com';
+  private usdaBaseUrl = 'https://api.nal.usda.gov/fdc/v1';
+
   // USDA FoodData Central API methods
   async searchFoods(request: IUSDASearchRequest): Promise<IApiResponse<IUSDASearchResponse>> {
     try {
@@ -207,6 +211,35 @@ class ApiService {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error occurred'
+      };
+    }
+  }
+
+  async recognizeFood(file: File): Promise<IApiResponse<{ predictions: Array<{ className: string; confidence: number }> }>> {
+    try {
+      // For now, we'll simulate food recognition since we don't have a dedicated image recognition API
+      // In a real implementation, you might use Google Vision API, Clarifai, or another service
+      
+      // Simple mock response for demonstration
+      const mockPredictions = [
+        { className: 'apple', confidence: 0.85 },
+        { className: 'banana', confidence: 0.15 }
+      ];
+
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      return {
+        success: true,
+        data: {
+          predictions: mockPredictions
+        }
+      };
+    } catch (error) {
+      console.error('Food recognition error:', error);
+      return {
+        success: false,
+        error: 'Failed to recognize food in image'
       };
     }
   }
