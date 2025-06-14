@@ -4,7 +4,7 @@ import { AnimatedButton } from '@/components/ui/animated-button';
 import { GlassCard } from '@/components/ui/glass-card';
 import { FloatingElement, ParticleBackground } from '@/components/ui/floating-elements';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowDown, ArrowUp, LogIn, UserPlus, Camera, BarChart3, Users, Sparkles } from 'lucide-react';
+import { ArrowDown, ArrowUp, LogIn, UserPlus, Camera, BarChart3, Users, Sparkles, Info } from 'lucide-react';
 
 const Landing = () => {
   return (
@@ -26,7 +26,16 @@ const Landing = () => {
               </div>
             </FloatingElement>
             
-            <div className="flex space-x-4">
+            <div className="flex items-center space-x-4">
+              <FloatingElement delay={0.1}>
+                <Link to="/about">
+                  <AnimatedButton variant="ghost" className="flex items-center">
+                    <Info className="w-4 h-4 mr-2" />
+                    About
+                  </AnimatedButton>
+                </Link>
+              </FloatingElement>
+              
               <FloatingElement delay={0.2}>
                 <Link to="/signin">
                   <AnimatedButton variant="outline" className="flex items-center">
