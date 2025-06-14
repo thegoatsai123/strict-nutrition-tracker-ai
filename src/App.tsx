@@ -13,6 +13,9 @@ import Dashboard from "./pages/Dashboard";
 import Recipes from "./pages/Recipes";
 import Community from "./pages/Community";
 import Settings from "./pages/Settings";
+import MealPlanner from "./pages/MealPlanner";
+import ShoppingList from "./pages/ShoppingList";
+import Achievements from "./pages/Achievements";
 import NotFound from "./pages/NotFound";
 import SignIn from "./pages/auth/SignIn";
 import SignUp from "./pages/auth/SignUp";
@@ -70,6 +73,24 @@ const App = () => (
             <AuthGuard>
               <Header />
               <Community />
+            </AuthGuard>
+          } />
+          <Route path="/meal-planner" element={
+            <AuthGuard>
+              <Header />
+              <MealPlanner />
+            </AuthGuard>
+          } />
+          <Route path="/shopping-list" element={
+            <AuthGuard>
+              <Header />
+              <ShoppingList />
+            </AuthGuard>
+          } />
+          <Route path="/achievements" element={
+            <AuthGuard>
+              <Header />
+              <Achievements />
             </AuthGuard>
           } />
           <Route path="/settings" element={
