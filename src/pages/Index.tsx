@@ -8,7 +8,7 @@ import { WaterTracker } from "@/components/WaterTracker";
 import { ExerciseTracker } from "@/components/ExerciseTracker";
 import { BarcodeScanner } from "@/components/BarcodeScanner/BarcodeScanner";
 import { PhotoFoodRecognition } from "@/components/PhotoFoodRecognition/PhotoFoodRecognition";
-import { RealTimeDashboard } from "@/components/RealTimeDashboard/RealTimeDashboard";
+import { EnhancedDashboard } from "@/components/Dashboard/EnhancedDashboard";
 import { ChatInterface } from "@/components/Chat/ChatInterface";
 import { AnimatedCard } from "@/components/ui/animated-card";
 import { ProgressRing } from "@/components/ui/progress-ring";
@@ -65,7 +65,7 @@ const Index = () => {
       <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
         <div className="space-y-2">
           <h1 className="text-3xl font-bold gradient-text">Dashboard</h1>
-          <p className="text-muted-foreground">Track your nutrition journey</p>
+          <p className="text-muted-foreground">Track your nutrition journey with smart insights</p>
         </div>
         
         {/* Quick Stats */}
@@ -100,7 +100,7 @@ const Index = () => {
       <div className="flex flex-wrap gap-2 justify-end">
         {!permission.granted && permission.default && (
           <Button variant="outline" onClick={requestPermission} className="hover-lift">
-            Enable Notifications
+            Enable Smart Notifications
           </Button>
         )}
         
@@ -142,12 +142,12 @@ const Index = () => {
         </Button>
       </div>
 
-      {/* Real-time Dashboard */}
+      {/* Enhanced Real-time Dashboard */}
       <div className="animate-slide-in-up" style={{ animationDelay: '300ms' }}>
-        <RealTimeDashboard />
+        <EnhancedDashboard />
       </div>
 
-      {/* Enhanced Quick Actions & Trackers */}
+      {/* Quick Actions & Trackers */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="animate-slide-in-up" style={{ animationDelay: '400ms' }}>
           <WaterTracker />
