@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Send, Bot, User, Minimize2, Maximize2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Message {
   id: string;
@@ -23,7 +24,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ isMinimized, onTog
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      content: "Hello! I'm your nutrition assistant. I can help you with meal planning, nutrition questions, recipe suggestions, and analyzing your food intake. How can I assist you today?",
+      content: "Hello! I'm Nutri-AI, your nutrition assistant. I can help you with meal planning, nutrition questions, and recipe suggestions. How can I assist you today?",
       sender: 'assistant',
       timestamp: new Date()
     }
@@ -47,22 +48,49 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ isMinimized, onTog
       sender: 'user',
       timestamp: new Date()
     };
-
-    setMessages(prev => [...prev, userMessage]);
+    
+    const newMessages = [...messages, userMessage];
+    setMessages(newMessages);
     setInputValue('');
     setIsLoading(true);
 
-    // Simulate AI response (replace with actual API call)
-    setTimeout(() => {
+    const apiMessages = newMessages.map(msg => ({
+      role: msg.sender === 'user' ? 'user' : 'assistant',
+      content: msg.content,
+    }));
+
+    try {
+      const { data, error } = await supabase.functions.invoke('nutrition-api', {
+        body: {
+          action: 'chatWithGroq',
+          messages: apiMessages,
+        },
+      });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: "I understand you're asking about nutrition. Let me help you with that! This is a demo response. In a real implementation, this would connect to an AI service to provide personalized nutrition advice.",
+        content: data.assistantMessage || "I'm not sure how to respond to that. Could you try asking in a different way?",
         sender: 'assistant',
         timestamp: new Date()
       };
       setMessages(prev => [...prev, assistantMessage]);
+
+    } catch (err) {
+      console.error("Error calling Groq function:", err);
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        content: "Sorry, I'm having trouble connecting to my brain right now. Please try again in a moment.",
+        sender: 'assistant',
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -174,7 +202,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ isMinimized, onTog
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Ask about nutrition, recipes, or meal planning..."
+            placeholder="Ask Nutri-AI about nutrition..."
             className="flex-1"
             disabled={isLoading}
           />

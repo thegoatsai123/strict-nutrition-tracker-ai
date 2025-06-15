@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
@@ -18,6 +17,7 @@ serve(async (req) => {
     // Get API keys from Supabase secrets
     const USDA_API_KEY = Deno.env.get('USDA_API_KEY')
     const SPOONACULAR_API_KEY = Deno.env.get('SPOONACULAR_API_KEY')
+    const GROQ_API_KEY = Deno.env.get('GROQ_API_KEY')
 
     if (!USDA_API_KEY || !SPOONACULAR_API_KEY) {
       throw new Error('API keys not configured')
@@ -157,6 +157,46 @@ serve(async (req) => {
           data: {
             predictions: mockPredictions
           }
+        }
+        break
+      }
+
+      case 'chatWithGroq': {
+        if (!GROQ_API_KEY) {
+          throw new Error('Groq API key not configured')
+        }
+
+        const { messages } = params
+
+        const systemPrompt = {
+          role: 'system',
+          content: "You are an expert nutrition and fitness assistant for an app called NutriTracker. Your name is Nutri-AI. Be friendly, encouraging, and provide accurate, actionable advice. Keep your responses concise and easy to understand. You can answer questions about food, recipes, meal plans, exercises, and general wellness. When asked for recipes or food info, suggest using the app's features like 'Log Food' or 'Search Recipes'. Do not respond with JSON or markdown formatting, just plain text."
+        }
+        
+        const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${GROQ_API_KEY}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            model: 'llama3-8b-8192',
+            messages: [systemPrompt, ...messages],
+            temperature: 0.7,
+          })
+        });
+        
+        if (!groqResponse.ok) {
+          const errorBody = await groqResponse.text();
+          throw new Error(`Groq API error: ${groqResponse.status} ${groqResponse.statusText} - ${errorBody}`)
+        }
+
+        const data = await groqResponse.json()
+        const assistantMessage = data.choices[0]?.message?.content
+        
+        response = {
+          success: true,
+          assistantMessage
         }
         break
       }
