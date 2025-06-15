@@ -1,144 +1,149 @@
-import React, { useEffect } from "react";
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthGuard } from "@/components/AuthGuard";
-import { Header } from "@/components/Layout/Header";
-import { PWAPrompt } from "@/components/PWA/PWAPrompt";
-import Index from "./pages/Index";
-import LogFood from "./pages/LogFood";
-import Dashboard from "./pages/Dashboard";
-import Recipes from "./pages/Recipes";
-import Community from "./pages/Community";
-import Settings from "./pages/Settings";
-import MealPlanner from "./pages/MealPlanner";
-import ShoppingList from "./pages/ShoppingList";
-import Achievements from "./pages/Achievements";
-import NotFound from "./pages/NotFound";
-import SignIn from "./pages/auth/SignIn";
-import SignUp from "./pages/auth/SignUp";
-import Landing from "./pages/Landing";
-import Analytics from "./pages/Analytics";
-import Onboarding from "./pages/Onboarding";
-import About from "./pages/About";
+
+import { Suspense, lazy } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from '@/components/ui/toaster';
+import { ThemeProvider } from '@/contexts/ThemeContext';
+import { AuthGuard } from '@/components/AuthGuard';
+import { Header } from '@/components/Layout/Header';
+import { LoadingSpinner, SkeletonCard } from '@/components/ui/loading-states';
+
+// Lazy load pages for better performance
+const Landing = lazy(() => import('@/pages/Landing'));
+const SignIn = lazy(() => import('@/pages/auth/SignIn'));
+const SignUp = lazy(() => import('@/pages/auth/SignUp'));
+const Index = lazy(() => import('@/pages/Index'));
+const LogFood = lazy(() => import('@/pages/LogFood'));
+const Analytics = lazy(() => import('@/pages/Analytics'));
+const Settings = lazy(() => import('@/pages/Settings'));
+const MealPlanner = lazy(() => import('@/pages/MealPlanner'));
+const Community = lazy(() => import('@/pages/Community'));
+const Recipes = lazy(() => import('@/pages/Recipes'));
+const About = lazy(() => import('@/pages/About'));
+const NotFound = lazy(() => import('@/pages/NotFound'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      gcTime: 10 * 60 * 1000, // 10 minutes (renamed from cacheTime)
-      retry: 3,
-      refetchOnWindowFocus: false,
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      retry: 2,
     },
   },
 });
 
-const App = () => {
-  useEffect(() => {
-    // Register service worker for PWA
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
-          .then((registration) => {
-            console.log('SW registered: ', registration);
-          })
-          .catch((registrationError) => {
-            console.log('SW registration failed: ', registrationError);
-          });
-      });
-    }
-  }, []);
+const PageLoader = () => (
+  <div className="container mx-auto p-6">
+    <div className="flex items-center justify-center mb-6">
+      <LoadingSpinner size="lg" />
+    </div>
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <SkeletonCard showAvatar lines={4} />
+      <SkeletonCard lines={3} />
+    </div>
+  </div>
+);
 
+function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <PWAPrompt />
-        <BrowserRouter>
-          <Routes>
-            {/* Public routes */}
-            <Route path="/" element={<Landing />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/signin" element={<SignIn />} />
-            <Route path="/signup" element={<SignUp />} />
-            
-            {/* Protected routes */}
-            <Route path="/onboarding" element={
-              <AuthGuard>
-                <Onboarding />
-              </AuthGuard>
-            } />
-            <Route path="/home" element={
-              <AuthGuard>
-                <Header />
-                <Index />
-              </AuthGuard>
-            } />
-            <Route path="/log-food" element={
-              <AuthGuard>
-                <Header />
-                <LogFood />
-              </AuthGuard>
-            } />
-            <Route path="/dashboard" element={
-              <AuthGuard>
-                <Header />
-                <Dashboard />
-              </AuthGuard>
-            } />
-            <Route path="/analytics" element={
-              <AuthGuard>
-                <Header />
-                <Analytics />
-              </AuthGuard>
-            } />
-            <Route path="/recipes" element={
-              <AuthGuard>
-                <Header />
-                <Recipes />
-              </AuthGuard>
-            } />
-            <Route path="/community" element={
-              <AuthGuard>
-                <Header />
-                <Community />
-              </AuthGuard>
-            } />
-            <Route path="/meal-planner" element={
-              <AuthGuard>
-                <Header />
-                <MealPlanner />
-              </AuthGuard>
-            } />
-            <Route path="/shopping-list" element={
-              <AuthGuard>
-                <Header />
-                <ShoppingList />
-              </AuthGuard>
-            } />
-            <Route path="/achievements" element={
-              <AuthGuard>
-                <Header />
-                <Achievements />
-              </AuthGuard>
-            } />
-            <Route path="/settings" element={
-              <AuthGuard>
-                <Header />
-                <Settings />
-              </AuthGuard>
-            } />
-            
-            {/* Catch all route */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
+      <ThemeProvider>
+        <Router>
+          <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
+            <Routes>
+              {/* Public routes */}
+              <Route path="/" element={
+                <Suspense fallback={<PageLoader />}>
+                  <Landing />
+                </Suspense>
+              } />
+              <Route path="/sign-in" element={
+                <Suspense fallback={<PageLoader />}>
+                  <SignIn />
+                </Suspense>
+              } />
+              <Route path="/sign-up" element={
+                <Suspense fallback={<PageLoader />}>
+                  <SignUp />
+                </Suspense>
+              } />
+              <Route path="/about" element={
+                <Suspense fallback={<PageLoader />}>
+                  <About />
+                </Suspense>
+              } />
+
+              {/* Protected routes */}
+              <Route path="/home" element={
+                <AuthGuard>
+                  <Header />
+                  <Suspense fallback={<PageLoader />}>
+                    <Index />
+                  </Suspense>
+                </AuthGuard>
+              } />
+              <Route path="/log-food" element={
+                <AuthGuard>
+                  <Header />
+                  <Suspense fallback={<PageLoader />}>
+                    <LogFood />
+                  </Suspense>
+                </AuthGuard>
+              } />
+              <Route path="/analytics" element={
+                <AuthGuard>
+                  <Header />
+                  <Suspense fallback={<PageLoader />}>
+                    <Analytics />
+                  </Suspense>
+                </AuthGuard>
+              } />
+              <Route path="/settings" element={
+                <AuthGuard>
+                  <Header />
+                  <Suspense fallback={<PageLoader />}>
+                    <Settings />
+                  </Suspense>
+                </AuthGuard>
+              } />
+              <Route path="/meal-planner" element={
+                <AuthGuard>
+                  <Header />
+                  <Suspense fallback={<PageLoader />}>
+                    <MealPlanner />
+                  </Suspense>
+                </AuthGuard>
+              } />
+              <Route path="/community" element={
+                <AuthGuard>
+                  <Header />
+                  <Suspense fallback={<PageLoader />}>
+                    <Community />
+                  </Suspense>
+                </AuthGuard>
+              } />
+              <Route path="/recipes" element={
+                <AuthGuard>
+                  <Header />
+                  <Suspense fallback={<PageLoader />}>
+                    <Recipes />
+                  </Suspense>
+                </AuthGuard>
+              } />
+
+              {/* Redirect and 404 */}
+              <Route path="/dashboard" element={<Navigate to="/home" replace />} />
+              <Route path="*" element={
+                <Suspense fallback={<PageLoader />}>
+                  <NotFound />
+                </Suspense>
+              } />
+            </Routes>
+          </div>
+          <Toaster />
+        </Router>
+      </ThemeProvider>
     </QueryClientProvider>
   );
-};
+}
 
 export default App;
