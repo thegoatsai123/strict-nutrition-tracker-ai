@@ -47,7 +47,7 @@ export class TensorFlowProvider implements MLModelProvider {
 
       // Run prediction
       const predictions = await this.model.predict(tensor);
-      const probabilities = await predictions.data();
+      const probabilities = await predictions.data() as Float32Array;
 
       // Convert to food predictions (simplified mapping)
       const foodPredictions: FoodPrediction[] = [

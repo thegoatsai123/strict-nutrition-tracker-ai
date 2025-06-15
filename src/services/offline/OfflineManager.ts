@@ -80,7 +80,7 @@ class OfflineManager {
       const transaction = this.db!.transaction(['entries'], 'readonly');
       const store = transaction.objectStore('entries');
       const index = store.index('synced');
-      const request = index.getAll(false);
+      const request = index.getAll(IDBKeyRange.only(false));
       
       request.onsuccess = () => resolve(request.result);
       request.onerror = () => reject(request.error);
@@ -212,7 +212,7 @@ class OfflineManager {
     const transaction = this.db.transaction(['entries'], 'readwrite');
     const store = transaction.objectStore('entries');
     const index = store.index('synced');
-    const request = index.openCursor(true);
+    const request = index.openCursor(IDBKeyRange.only(true));
     
     request.onsuccess = (event) => {
       const cursor = (event.target as IDBRequest).result;
