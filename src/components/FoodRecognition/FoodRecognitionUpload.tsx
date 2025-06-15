@@ -1,24 +1,52 @@
-
 import React, { useState, useRef } from 'react'
 import { AnimatedButton } from '@/components/ui/animated-button'
 import { GlassCard } from '@/components/ui/glass-card'
-import { Camera, Upload, Loader2, CheckCircle, AlertCircle, Brain } from 'lucide-react'
+import { Camera, Upload, Loader2, CheckCircle, AlertCircle, Brain, Zap } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useToast } from '@/hooks/use-toast'
 import { useFoodRecognition } from '@/hooks/useFoodRecognition'
 import { Badge } from '@/components/ui/badge'
+import { EnhancedFoodRecognition } from './EnhancedFoodRecognition'
 
 interface FoodRecognitionUploadProps {
   onImageUpload: (file: File) => void
   isProcessing?: boolean
   prediction?: { className: string; confidence: number } | null
+  enhanced?: boolean
 }
 
 export const FoodRecognitionUpload: React.FC<FoodRecognitionUploadProps> = ({
   onImageUpload,
   isProcessing = false,
-  prediction = null
+  prediction = null,
+  enhanced = true
 }) => {
+  const [showEnhanced, setShowEnhanced] = useState(enhanced);
+
+  // If enhanced mode is requested, show the enhanced component
+  if (showEnhanced) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Brain className="h-5 w-5 text-purple-600" />
+            <span className="font-medium">Enhanced AI Recognition</span>
+            <Badge variant="secondary">Advanced</Badge>
+          </div>
+          <AnimatedButton
+            variant="outline"
+            size="sm"
+            onClick={() => setShowEnhanced(false)}
+          >
+            Use Basic Mode
+          </AnimatedButton>
+        </div>
+        <EnhancedFoodRecognition />
+      </div>
+    );
+  }
+
+  // Keep existing basic implementation as fallback
   const [dragOver, setDragOver] = useState(false)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -35,13 +63,20 @@ export const FoodRecognitionUpload: React.FC<FoodRecognitionUploadProps> = ({
       return
     }
 
+    // Check file size (10MB limit)
+    if (file.size > 10 * 1024 * 1024) {
+      toast({
+        title: "File Too Large",
+        description: "Please select an image smaller than 10MB.",
+        variant: "destructive"
+      })
+      return
+    }
+
     const url = URL.createObjectURL(file)
     setPreviewUrl(url)
     
-    // Call the original onImageUpload for backward compatibility
     onImageUpload(file)
-    
-    // Use the new ML recognition system
     await recognizeFood(file)
   }
 
@@ -67,6 +102,23 @@ export const FoodRecognitionUpload: React.FC<FoodRecognitionUploadProps> = ({
 
   return (
     <div className="w-full max-w-md mx-auto space-y-6">
+      {/* Mode Toggle */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-2 text-sm text-gray-600">
+          <Camera className="h-4 w-4" />
+          <span>Basic Recognition Mode</span>
+        </div>
+        <AnimatedButton
+          variant="outline"
+          size="sm"
+          onClick={() => setShowEnhanced(true)}
+          className="text-xs"
+        >
+          <Zap className="h-3 w-3 mr-1" />
+          Try Enhanced
+        </AnimatedButton>
+      </div>
+
       {/* ML Provider Status */}
       <div className="flex items-center justify-center space-x-2 text-sm text-gray-600">
         <Brain className="h-4 w-4" />
@@ -148,7 +200,7 @@ export const FoodRecognitionUpload: React.FC<FoodRecognitionUploadProps> = ({
                   Drop your image here or click to browse
                 </p>
                 <p className="text-xs text-gray-500 mt-2">
-                  Powered by advanced ML models
+                  Basic ML recognition • Max 10MB
                 </p>
               </div>
             </>
@@ -182,7 +234,7 @@ export const FoodRecognitionUpload: React.FC<FoodRecognitionUploadProps> = ({
           onClick={() => {
             toast({
               title: "Camera Feature",
-              description: "Camera functionality ready for integration with your ML model.",
+              description: "Camera functionality ready for integration.",
             })
           }}
           disabled={currentProcessing}
@@ -196,7 +248,7 @@ export const FoodRecognitionUpload: React.FC<FoodRecognitionUploadProps> = ({
         <div className="text-center space-y-2">
           <Loader2 className="h-6 w-6 animate-spin mx-auto text-green-600" />
           <p className="text-sm text-gray-600">
-            AI models analyzing your food image...
+            AI analyzing your food image...
           </p>
         </div>
       )}
