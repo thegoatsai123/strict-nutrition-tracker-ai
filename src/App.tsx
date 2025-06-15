@@ -80,7 +80,7 @@ function App() {
                 </Suspense>
               } />
 
-              {/* Protected routes */}
+              {/* Protected routes with consistent Header */}
               <Route path="/home" element={
                 <AuthGuard>
                   <Header />
@@ -146,8 +146,8 @@ function App() {
                 </Suspense>
               } />
             </Routes>
+            <Toaster />
           </div>
-          <Toaster />
         </Router>
       </ThemeProvider>
     </QueryClientProvider>

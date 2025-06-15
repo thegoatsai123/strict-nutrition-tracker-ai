@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { User, Settings, LogOut, MessageSquare } from 'lucide-react';
+import { Settings, LogOut } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 
@@ -44,48 +44,33 @@ export const Header = () => {
           <ThemeToggle />
           
           {user && (
-            <>
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="flex items-center gap-2 hover:bg-accent transition-colors duration-200"
-                onClick={() => {
-                  // This will be handled by the chat interface in the Index component
-                  window.dispatchEvent(new CustomEvent('toggle-chat'));
-                }}
-              >
-                <MessageSquare className="h-4 w-4" />
-                AI Assistant
-              </Button>
-              
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-8 w-8 rounded-full hover:bg-accent transition-colors duration-200">
-                    <Avatar className="h-8 w-8">
-                      <AvatarFallback className="bg-gradient-to-br from-green-500 to-green-600 text-white">
-                        {getUserInitials(user.user_metadata?.name || user.email || 'U')}
-                      </AvatarFallback>
-                    </Avatar>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56 bg-background border shadow-lg" align="end" forceMount>
-                  <DropdownMenuItem 
-                    onClick={() => navigate('/settings')}
-                    className="hover:bg-accent transition-colors duration-200"
-                  >
-                    <Settings className="mr-2 h-4 w-4" />
-                    <span>Settings</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem 
-                    onClick={handleSignOut}
-                    className="hover:bg-accent transition-colors duration-200"
-                  >
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>Log out</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative h-8 w-8 rounded-full hover:bg-accent transition-colors duration-200">
+                  <Avatar className="h-8 w-8">
+                    <AvatarFallback className="bg-gradient-to-br from-green-500 to-green-600 text-white">
+                      {getUserInitials(user.user_metadata?.name || user.email || 'U')}
+                    </AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56 bg-background border shadow-lg" align="end" forceMount>
+                <DropdownMenuItem 
+                  onClick={() => navigate('/settings')}
+                  className="hover:bg-accent transition-colors duration-200"
+                >
+                  <Settings className="mr-2 h-4 w-4" />
+                  <span>Settings</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={handleSignOut}
+                  className="hover:bg-accent transition-colors duration-200"
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Log out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
         </div>
       </div>
