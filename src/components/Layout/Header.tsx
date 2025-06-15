@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { User, Settings, LogOut } from 'lucide-react';
+import { User, Settings, LogOut, MessageSquare } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
 export const Header = () => {
@@ -39,29 +39,46 @@ export const Header = () => {
           <span className="text-xl font-bold text-gray-900">NutriTracker</span>
         </Link>
 
-        {user && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                <Avatar className="h-8 w-8">
-                  <AvatarFallback>
-                    {getUserInitials(user.user_metadata?.name || user.email || 'U')}
-                  </AvatarFallback>
-                </Avatar>
+        <div className="flex items-center gap-4">
+          {user && (
+            <>
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="flex items-center gap-2"
+                onClick={() => {
+                  // This will be handled by the chat interface in the Index component
+                  window.dispatchEvent(new CustomEvent('toggle-chat'));
+                }}
+              >
+                <MessageSquare className="h-4 w-4" />
+                AI Assistant
               </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56" align="end" forceMount>
-              <DropdownMenuItem onClick={() => navigate('/settings')}>
-                <Settings className="mr-2 h-4 w-4" />
-                <span>Settings</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleSignOut}>
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>Log out</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                    <Avatar className="h-8 w-8">
+                      <AvatarFallback>
+                        {getUserInitials(user.user_metadata?.name || user.email || 'U')}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <DropdownMenuItem onClick={() => navigate('/settings')}>
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>Settings</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleSignOut}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Log out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
+          )}
+        </div>
       </div>
     </header>
   );

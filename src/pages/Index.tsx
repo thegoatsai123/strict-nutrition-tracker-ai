@@ -9,8 +9,10 @@ import { ExerciseTracker } from "@/components/ExerciseTracker";
 import { BarcodeScanner } from "@/components/BarcodeScanner/BarcodeScanner";
 import { PhotoFoodRecognition } from "@/components/PhotoFoodRecognition/PhotoFoodRecognition";
 import { RealTimeDashboard } from "@/components/RealTimeDashboard/RealTimeDashboard";
+import { ChatInterface } from "@/components/Chat/ChatInterface";
 import { Link } from "react-router-dom";
 import { useNotifications } from "@/hooks/useNotifications";
+import { useChat } from "@/hooks/useChat";
 import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
@@ -18,6 +20,7 @@ const Index = () => {
   const [showPhotoRecognition, setShowPhotoRecognition] = useState(false);
   
   const { permission, requestPermission, scheduleMealReminder, scheduleWaterReminder } = useNotifications();
+  const { isChatMinimized, toggleChatMinimize } = useChat();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -108,6 +111,12 @@ const Index = () => {
         <WaterTracker />
         <ExerciseTracker />
       </div>
+
+      {/* Chat Interface */}
+      <ChatInterface 
+        isMinimized={isChatMinimized} 
+        onToggleMinimize={toggleChatMinimize} 
+      />
     </div>
   );
 };
