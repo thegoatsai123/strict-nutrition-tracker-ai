@@ -20,6 +20,7 @@ const MealPlanner = lazy(() => import('@/pages/MealPlanner'));
 const Community = lazy(() => import('@/pages/Community'));
 const Recipes = lazy(() => import('@/pages/Recipes'));
 const About = lazy(() => import('@/pages/About'));
+const Demo = lazy(() => import('@/pages/Demo'));
 const NotFound = lazy(() => import('@/pages/NotFound'));
 
 const queryClient = new QueryClient({
@@ -69,6 +70,11 @@ function App() {
               <Route path="/about" element={
                 <Suspense fallback={<PageLoader />}>
                   <About />
+                </Suspense>
+              } />
+              <Route path="/demo" element={
+                <Suspense fallback={<PageLoader />}>
+                  <Demo />
                 </Suspense>
               } />
 

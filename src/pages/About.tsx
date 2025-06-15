@@ -1,8 +1,9 @@
 
-import { ArrowLeft, Camera, BarChart3, Users, Brain, Shield, Target } from 'lucide-react';
+import { ArrowLeft, Camera, BarChart3, Users, Brain, Shield, Target, ChevronRight, Play, User, Upload, Utensils, TrendingUp, Calendar, MessageCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { AnimatedCard } from '@/components/ui/animated-card';
 
 const About = () => {
   const features = [
@@ -38,6 +39,91 @@ const About = () => {
     }
   ];
 
+  const steps = [
+    {
+      number: 1,
+      icon: <User className="w-6 h-6" />,
+      title: "Sign Up & Create Profile",
+      description: "Create your account with email and set up your profile with personal goals, dietary preferences, and health information.",
+      details: [
+        "Click 'Sign Up' and enter your email and password",
+        "Verify your email address",
+        "Complete your profile with age, weight, height, and activity level",
+        "Set your nutrition goals (weight loss, muscle gain, maintenance)",
+        "Choose dietary preferences (vegetarian, keto, etc.)"
+      ]
+    },
+    {
+      number: 2,
+      icon: <Camera className="w-6 h-6" />,
+      title: "Log Your First Meal",
+      description: "Take a photo of your food or manually search and add items to start tracking your nutrition intake.",
+      details: [
+        "Go to 'Log Food' from the main menu",
+        "Take a photo of your meal using the camera feature",
+        "Our AI will automatically identify the food items",
+        "Review and confirm the detected foods",
+        "Adjust portion sizes if needed",
+        "Add any missed items manually using the search function"
+      ]
+    },
+    {
+      number: 3,
+      icon: <Upload className="w-6 h-6" />,
+      title: "Track Throughout the Day",
+      description: "Continue logging all your meals, snacks, and water intake to build a complete picture of your nutrition.",
+      details: [
+        "Log breakfast, lunch, dinner, and snacks",
+        "Use the water tracker to monitor hydration",
+        "Scan barcodes for packaged foods",
+        "Save frequently eaten meals for quick logging",
+        "Set reminders to log meals consistently"
+      ]
+    },
+    {
+      number: 4,
+      icon: <BarChart3 className="w-6 h-6" />,
+      title: "View Your Analytics",
+      description: "Access detailed analytics to understand your eating patterns, nutrition balance, and progress toward goals.",
+      details: [
+        "Navigate to the 'Analytics' page",
+        "View daily, weekly, and monthly nutrition summaries",
+        "Check macro and micronutrient breakdowns",
+        "Monitor calorie intake vs. goals",
+        "Track weight progress over time",
+        "Identify eating patterns and trends"
+      ]
+    },
+    {
+      number: 5,
+      icon: <Calendar className="w-6 h-6" />,
+      title: "Plan Future Meals",
+      description: "Use our meal planning feature to prepare healthy meals in advance and stay on track with your goals.",
+      details: [
+        "Go to 'Meal Planner' section",
+        "Browse our recipe database",
+        "Plan meals for the week ahead",
+        "Generate shopping lists automatically",
+        "Get AI-powered meal suggestions based on your goals",
+        "Save and reuse successful meal plans"
+      ]
+    },
+    {
+      number: 6,
+      icon: <MessageCircle className="w-6 h-6" />,
+      title: "Get Personalized Guidance",
+      description: "Chat with our AI nutrition coach for personalized advice, recipe suggestions, and motivation.",
+      details: [
+        "Click the chat button in the bottom right",
+        "Ask questions about nutrition and health",
+        "Get recipe recommendations based on your preferences",
+        "Receive meal suggestions for your goals",
+        "Get tips for healthy eating habits",
+        "Access 24/7 support and motivation"
+      ]
+    }
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50">
       {/* Header */}
@@ -53,12 +139,20 @@ const About = () => {
               </span>
             </Link>
             
-            <Link to="/">
-              <Button variant="outline" className="flex items-center">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Home
-              </Button>
-            </Link>
+            <div className="flex items-center gap-4">
+              <Link to="/demo">
+                <Button variant="outline" className="flex items-center">
+                  <Play className="w-4 h-4 mr-2" />
+                  View Demo
+                </Button>
+              </Link>
+              <Link to="/">
+                <Button variant="outline" className="flex items-center">
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Back to Home
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </header>
@@ -66,48 +160,62 @@ const About = () => {
       {/* Hero Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-5xl md:text-6xl font-bold mb-8 bg-gradient-to-r from-green-600 via-blue-600 to-purple-600 bg-clip-text text-transparent">
-            About NutriTracker
+          <h1 className="text-5xl md:text-6xl font-bold mb-8 bg-gradient-to-r from-green-600 via-blue-600 to-purple-600 bg-clip-text text-transparent animate-fade-in">
+            How to Use NutriTracker
           </h1>
-          <p className="text-xl md:text-2xl mb-12 text-gray-700 leading-relaxed">
-            Revolutionizing nutrition tracking through artificial intelligence and community support
+          <p className="text-xl md:text-2xl mb-12 text-gray-700 leading-relaxed animate-fade-in" style={{ animationDelay: '200ms' }}>
+            Your complete guide to mastering nutrition tracking with AI-powered insights
           </p>
         </div>
       </section>
 
-      {/* Mission Section */}
+      {/* Step by Step Guide */}
       <section className="py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
-          <Card className="bg-white/70 backdrop-blur-md border-white/20 shadow-xl">
-            <CardHeader className="text-center pb-8">
-              <CardTitle className="text-3xl font-bold text-gray-900 mb-4">Our Mission</CardTitle>
-              <CardDescription className="text-lg text-gray-600 max-w-3xl mx-auto">
-                At NutriTracker, we believe that proper nutrition is the foundation of a healthy life. 
-                Our mission is to make nutrition tracking effortless, accurate, and accessible to everyone 
-                through cutting-edge AI technology and a supportive community.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid md:grid-cols-2 gap-8">
-                <div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-3">The Problem We Solve</h3>
-                  <p className="text-gray-600 leading-relaxed">
-                    Traditional nutrition tracking is time-consuming and often inaccurate. Manual food logging 
-                    is tedious, and many people struggle to maintain consistent tracking habits. This leads to 
-                    poor dietary choices and missed health goals.
-                  </p>
-                </div>
-                <div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-3">Our Solution</h3>
-                  <p className="text-gray-600 leading-relaxed">
-                    NutriTracker leverages advanced machine learning models to instantly recognize food from photos, 
-                    automatically calculating nutritional information. Combined with comprehensive analytics and 
-                    community support, we make healthy eating achievable for everyone.
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold mb-6 text-gray-900">Step-by-Step Guide</h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Follow these simple steps to get the most out of your nutrition tracking journey
+            </p>
+          </div>
+
+          <div className="space-y-8">
+            {steps.map((step, index) => (
+              <AnimatedCard
+                key={step.number}
+                className="bg-white/70 backdrop-blur-md border-white/20 shadow-lg"
+                animationDelay={index * 100}
+                hoverEffect="lift"
+              >
+                <CardContent className="p-8">
+                  <div className="flex items-start gap-6">
+                    <div className="flex-shrink-0">
+                      <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-blue-500 rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg">
+                        {step.number}
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="p-2 bg-gradient-to-br from-green-100 to-blue-100 rounded-lg">
+                          {step.icon}
+                        </div>
+                        <h3 className="text-2xl font-bold text-gray-900">{step.title}</h3>
+                      </div>
+                      <p className="text-lg text-gray-600 mb-6">{step.description}</p>
+                      <div className="space-y-3">
+                        {step.details.map((detail, detailIndex) => (
+                          <div key={detailIndex} className="flex items-start gap-3">
+                            <ChevronRight className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                            <span className="text-gray-700">{detail}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </AnimatedCard>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -123,7 +231,12 @@ const About = () => {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => (
-              <Card key={index} className="bg-white/70 backdrop-blur-md border-white/20 shadow-lg hover:shadow-xl transition-shadow duration-300">
+              <AnimatedCard
+                key={index}
+                className="bg-white/70 backdrop-blur-md border-white/20 shadow-lg"
+                animationDelay={index * 100}
+                hoverEffect="scale"
+              >
                 <CardHeader className="text-center">
                   <div className="mx-auto w-16 h-16 bg-gradient-to-br from-white/20 to-white/10 rounded-2xl flex items-center justify-center mb-4">
                     {feature.icon}
@@ -133,43 +246,43 @@ const About = () => {
                 <CardContent>
                   <p className="text-gray-600 text-center leading-relaxed">{feature.description}</p>
                 </CardContent>
-              </Card>
+              </AnimatedCard>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Technology Section */}
+      {/* Tips Section */}
       <section className="py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
-          <Card className="bg-gradient-to-r from-green-500/10 to-blue-500/10 backdrop-blur-md border-white/20 shadow-xl">
+          <AnimatedCard className="bg-gradient-to-r from-green-500/10 to-blue-500/10 backdrop-blur-md border-white/20 shadow-xl">
             <CardHeader className="text-center">
-              <CardTitle className="text-3xl font-bold text-gray-900 mb-4">Built with Modern Technology</CardTitle>
+              <CardTitle className="text-3xl font-bold text-gray-900 mb-4">Pro Tips for Success</CardTitle>
               <CardDescription className="text-lg text-gray-600">
-                Our platform leverages cutting-edge technologies to deliver the best user experience
+                Maximize your results with these expert recommendations
               </CardDescription>
             </CardHeader>
             <CardContent className="grid md:grid-cols-2 gap-8">
               <div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-3">Machine Learning</h3>
+                <h3 className="text-xl font-semibold text-gray-900 mb-4">📸 Food Photography Tips</h3>
                 <ul className="space-y-2 text-gray-600">
-                  <li>• Convolutional Neural Networks (CNN) for image recognition</li>
-                  <li>• Food-101 dataset training for accurate food identification</li>
-                  <li>• Continuous model improvement through user feedback</li>
-                  <li>• Support for multiple ML providers and fallback systems</li>
+                  <li>• Take photos in good lighting for better AI recognition</li>
+                  <li>• Capture the entire plate to identify all food items</li>
+                  <li>• Use different angles for complex dishes</li>
+                  <li>• Separate items on the plate when possible</li>
                 </ul>
               </div>
               <div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-3">Platform</h3>
+                <h3 className="text-xl font-semibold text-gray-900 mb-4">⏰ Consistency Tips</h3>
                 <ul className="space-y-2 text-gray-600">
-                  <li>• React & TypeScript for robust frontend development</li>
-                  <li>• Supabase for secure backend and authentication</li>
-                  <li>• Real-time data synchronization across devices</li>
-                  <li>• Progressive Web App (PWA) capabilities</li>
+                  <li>• Log meals immediately after eating</li>
+                  <li>• Set daily reminders to track water intake</li>
+                  <li>• Review your analytics weekly</li>
+                  <li>• Use the meal planner to stay prepared</li>
                 </ul>
               </div>
             </CardContent>
-          </Card>
+          </AnimatedCard>
         </div>
       </section>
 
@@ -177,20 +290,21 @@ const About = () => {
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl font-bold mb-6 text-gray-900">
-            Ready to Transform Your Nutrition Journey?
+            Ready to Start Your Journey?
           </h2>
           <p className="text-xl mb-8 text-gray-600 max-w-2xl mx-auto">
-            Join thousands of users who have already revolutionized their approach to healthy eating
+            Join thousands of users who have transformed their health with smart nutrition tracking
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/signup">
-              <Button size="lg" className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white px-8 py-3 text-lg">
+            <Link to="/sign-up">
+              <Button size="lg" className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white px-8 py-3 text-lg animate-fade-in hover-scale">
                 Get Started Free
               </Button>
             </Link>
-            <Link to="/signin">
-              <Button variant="outline" size="lg" className="px-8 py-3 text-lg">
-                Sign In
+            <Link to="/demo">
+              <Button variant="outline" size="lg" className="px-8 py-3 text-lg animate-fade-in hover-scale" style={{ animationDelay: '100ms' }}>
+                <Play className="w-5 h-5 mr-2" />
+                Try Demo
               </Button>
             </Link>
           </div>
