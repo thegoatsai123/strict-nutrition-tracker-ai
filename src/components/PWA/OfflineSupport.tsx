@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { WifiOff, Wifi, Download, Sync, AlertCircle } from 'lucide-react';
+import { WifiOff, Wifi, Download, RefreshCw, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface OfflineData {
@@ -166,7 +166,7 @@ export const OfflineSupport: React.FC = () => {
                 onClick={syncOfflineData}
                 disabled={syncInProgress}
               >
-                {syncInProgress ? <Sync className="mr-1 h-3 w-3 animate-spin" /> : <Sync className="mr-1 h-3 w-3" />}
+                {syncInProgress ? <RefreshCw className="mr-1 h-3 w-3 animate-spin" /> : <RefreshCw className="mr-1 h-3 w-3" />}
                 Sync Now
               </Button>
             )}
