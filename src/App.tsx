@@ -57,16 +57,18 @@ function App() {
                   <Landing />
                 </Suspense>
               } />
-              <Route path="/sign-in" element={
+              <Route path="/signin" element={
                 <Suspense fallback={<PageLoader />}>
                   <SignIn />
                 </Suspense>
               } />
-              <Route path="/sign-up" element={
+              <Route path="/sign-in" element={<Navigate to="/signin" replace />} />
+              <Route path="/signup" element={
                 <Suspense fallback={<PageLoader />}>
                   <SignUp />
                 </Suspense>
               } />
+              <Route path="/sign-up" element={<Navigate to="/signup" replace />} />
               <Route path="/about" element={
                 <Suspense fallback={<PageLoader />}>
                   <About />
@@ -87,6 +89,7 @@ function App() {
                   </Suspense>
                 </AuthGuard>
               } />
+              <Route path="/dashboard" element={<Navigate to="/home" replace />} />
               <Route path="/log-food" element={
                 <AuthGuard>
                   <Header />
@@ -136,8 +139,7 @@ function App() {
                 </AuthGuard>
               } />
 
-              {/* Redirect and 404 */}
-              <Route path="/dashboard" element={<Navigate to="/home" replace />} />
+              {/* 404 handler */}
               <Route path="*" element={
                 <Suspense fallback={<PageLoader />}>
                   <NotFound />
