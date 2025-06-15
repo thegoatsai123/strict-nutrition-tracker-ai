@@ -85,7 +85,17 @@ export class TensorFlowProvider implements MLModelProvider {
       'pasta', 'rice', 'chicken', 'fish', 'bread', 'soup'
     ];
     
-    const maxIndex = probabilities.indexOf(Math.max(...Array.from(probabilities)));
+    // Find the index of maximum probability correctly
+    let maxIndex = 0;
+    let maxValue = probabilities[0];
+    
+    for (let i = 1; i < probabilities.length; i++) {
+      if (probabilities[i] > maxValue) {
+        maxValue = probabilities[i];
+        maxIndex = i;
+      }
+    }
+    
     return foodClasses[maxIndex % foodClasses.length] || 'unknown food';
   }
 

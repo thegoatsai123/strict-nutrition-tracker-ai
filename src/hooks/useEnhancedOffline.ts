@@ -3,16 +3,39 @@ import { useState, useEffect, useCallback } from 'react';
 import { offlineManager } from '@/services/offline/OfflineManager';
 import { useToast } from '@/hooks/use-toast';
 
+interface QueueStatus {
+  total: number;
+  unsynced: number;
+  isOnline: boolean;
+}
+
 export const useEnhancedOffline = () => {
-  const [queueStatus, setQueueStatus] = useState(offlineManager.getQueueStatus());
+  const [queueStatus, setQueueStatus] = useState<QueueStatus>({
+    total: 0,
+    unsynced: 0,
+    isOnline: navigator.onLine
+  });
   const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
   const { toast } = useToast();
 
-  const updateStatus = useCallback(() => {
-    setQueueStatus(offlineManager.getQueueStatus());
+  const updateStatus = useCallback(async () => {
+    try {
+      await offlineManager.initialize();
+      const unsynced = await offlineManager.getUnsynced();
+      setQueueStatus({
+        total: unsynced.length,
+        unsynced: unsynced.length,
+        isOnline: navigator.onLine
+      });
+    } catch (error) {
+      console.error('Failed to update offline status:', error);
+    }
   }, []);
 
   useEffect(() => {
+    // Initialize and update status
+    updateStatus();
+    
     // Update status every 5 seconds
     const interval = setInterval(updateStatus, 5000);
     
@@ -43,12 +66,12 @@ export const useEnhancedOffline = () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, [toast]);
+  }, [toast, updateStatus]);
 
   const addOfflineEntry = useCallback(async (type: string, data: any) => {
     try {
       await offlineManager.addEntry(type, data);
-      updateStatus();
+      await updateStatus();
       
       if (!queueStatus.isOnline) {
         toast({
@@ -70,7 +93,7 @@ export const useEnhancedOffline = () => {
     try {
       const result = await offlineManager.syncOfflineData();
       setLastSyncTime(new Date());
-      updateStatus();
+      await updateStatus();
       
       if (result.success > 0) {
         toast({
@@ -87,13 +110,13 @@ export const useEnhancedOffline = () => {
         description: "Some items couldn't be synced. Will retry automatically.",
         variant: "destructive",
       });
-      return { success: 0, failed: queueStatus.unsynced };
+      return { success: 0, failed: queueStatus.unsynced, errors: [] };
     }
   }, [toast, updateStatus, queueStatus.unsynced]);
 
-  const clearSyncedData = useCallback(() => {
+  const clearSyncedData = useCallback(async () => {
     offlineManager.clearSyncedEntries();
-    updateStatus();
+    await updateStatus();
     toast({
       title: "Cleared Synced Data",
       description: "Local synced data has been cleared to free up space.",

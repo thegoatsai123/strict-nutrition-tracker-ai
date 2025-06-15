@@ -3,195 +3,225 @@ import { supabase } from '@/integrations/supabase/client';
 
 interface OfflineEntry {
   id: string;
-  type: 'food_log' | 'water_intake' | 'exercise' | 'goal_update';
+  type: string;
   data: any;
-  timestamp: string;
+  timestamp: number;
   synced: boolean;
   retryCount: number;
 }
 
-export class OfflineManager {
-  private static instance: OfflineManager;
-  private isOnline = navigator.onLine;
-  private syncQueue: OfflineEntry[] = [];
+interface QueueStatus {
+  total: number;
+  unsynced: number;
+  isOnline: boolean;
+}
+
+interface SyncResult {
+  success: number;
+  failed: number;
+  errors: string[];
+}
+
+class OfflineManager {
+  private dbName = 'nutritracker_offline';
+  private version = 1;
+  private db: IDBDatabase | null = null;
   private maxRetries = 3;
-  private syncInProgress = false;
 
-  static getInstance(): OfflineManager {
-    if (!OfflineManager.instance) {
-      OfflineManager.instance = new OfflineManager();
-    }
-    return OfflineManager.instance;
-  }
-
-  constructor() {
-    this.loadOfflineData();
-    this.setupEventListeners();
-  }
-
-  private setupEventListeners() {
-    window.addEventListener('online', () => {
-      this.isOnline = true;
-      this.syncOfflineData();
+  async initialize(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open(this.dbName, this.version);
+      
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => {
+        this.db = request.result;
+        resolve();
+      };
+      
+      request.onupgradeneeded = (event) => {
+        const db = (event.target as IDBOpenDBRequest).result;
+        
+        if (!db.objectStoreNames.contains('entries')) {
+          const store = db.createObjectStore('entries', { keyPath: 'id' });
+          store.createIndex('type', 'type', { unique: false });
+          store.createIndex('synced', 'synced', { unique: false });
+          store.createIndex('timestamp', 'timestamp', { unique: false });
+        }
+      };
     });
-
-    window.addEventListener('offline', () => {
-      this.isOnline = false;
-    });
-
-    // Periodic sync when online
-    setInterval(() => {
-      if (this.isOnline && !this.syncInProgress) {
-        this.syncOfflineData();
-      }
-    }, 30000); // Every 30 seconds
   }
 
   async addEntry(type: string, data: any): Promise<void> {
+    if (!this.db) await this.initialize();
+    
     const entry: OfflineEntry = {
-      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-      type: type as any,
+      id: `${type}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      type,
       data,
-      timestamp: new Date().toISOString(),
+      timestamp: Date.now(),
       synced: false,
       retryCount: 0
     };
 
-    this.syncQueue.push(entry);
-    this.saveOfflineData();
-
-    // Try immediate sync if online
-    if (this.isOnline) {
-      await this.syncEntry(entry);
-    }
+    return new Promise((resolve, reject) => {
+      const transaction = this.db!.transaction(['entries'], 'readwrite');
+      const store = transaction.objectStore('entries');
+      const request = store.add(entry);
+      
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+    });
   }
 
-  async syncOfflineData(): Promise<{ success: number; failed: number }> {
-    if (this.syncInProgress || !this.isOnline) {
-      return { success: 0, failed: 0 };
-    }
+  async getUnsynced(): Promise<OfflineEntry[]> {
+    if (!this.db) await this.initialize();
+    
+    return new Promise((resolve, reject) => {
+      const transaction = this.db!.transaction(['entries'], 'readonly');
+      const store = transaction.objectStore('entries');
+      const index = store.index('synced');
+      const request = index.getAll(false);
+      
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+  }
 
-    this.syncInProgress = true;
-    let successCount = 0;
-    let failedCount = 0;
-
-    const unsyncedEntries = this.syncQueue.filter(entry => !entry.synced);
-
-    for (const entry of unsyncedEntries) {
-      try {
-        const success = await this.syncEntry(entry);
-        if (success) {
-          successCount++;
+  async markAsSynced(id: string): Promise<void> {
+    if (!this.db) await this.initialize();
+    
+    return new Promise((resolve, reject) => {
+      const transaction = this.db!.transaction(['entries'], 'readwrite');
+      const store = transaction.objectStore('entries');
+      const getRequest = store.get(id);
+      
+      getRequest.onsuccess = () => {
+        const entry = getRequest.result;
+        if (entry) {
+          entry.synced = true;
+          const putRequest = store.put(entry);
+          putRequest.onsuccess = () => resolve();
+          putRequest.onerror = () => reject(putRequest.error);
         } else {
-          failedCount++;
+          resolve();
         }
-      } catch (error) {
-        console.error('Sync error for entry:', entry.id, error);
-        failedCount++;
-      }
-    }
-
-    this.syncInProgress = false;
-    this.saveOfflineData();
-    
-    return { success: successCount, failed: failedCount };
-  }
-
-  private async syncEntry(entry: OfflineEntry): Promise<boolean> {
-    try {
-      let result;
-
-      switch (entry.type) {
-        case 'food_log':
-          result = await supabase
-            .from('food_logs')
-            .insert(entry.data);
-          break;
-
-        case 'water_intake':
-          result = await supabase
-            .from('water_intake')
-            .upsert(entry.data);
-          break;
-
-        case 'exercise':
-          result = await supabase
-            .from('exercise_logs')
-            .insert(entry.data);
-          break;
-
-        case 'goal_update':
-          result = await supabase
-            .from('nutrition_goals')
-            .upsert(entry.data);
-          break;
-
-        default:
-          console.warn('Unknown entry type:', entry.type);
-          return false;
-      }
-
-      if (result.error) {
-        throw result.error;
-      }
-
-      entry.synced = true;
-      return true;
-
-    } catch (error) {
-      console.error('Failed to sync entry:', entry.id, error);
-      entry.retryCount++;
+      };
       
-      // Remove entries that have failed too many times
-      if (entry.retryCount >= this.maxRetries) {
-        this.removeEntry(entry.id);
-      }
-      
-      return false;
-    }
+      getRequest.onerror = () => reject(getRequest.error);
+    });
   }
 
-  private removeEntry(entryId: string) {
-    this.syncQueue = this.syncQueue.filter(entry => entry.id !== entryId);
-    this.saveOfflineData();
-  }
-
-  private loadOfflineData() {
-    try {
-      const stored = localStorage.getItem('offline_sync_queue');
-      if (stored) {
-        this.syncQueue = JSON.parse(stored);
-      }
-    } catch (error) {
-      console.error('Failed to load offline data:', error);
-      this.syncQueue = [];
-    }
-  }
-
-  private saveOfflineData() {
-    try {
-      localStorage.setItem('offline_sync_queue', JSON.stringify(this.syncQueue));
-    } catch (error) {
-      console.error('Failed to save offline data:', error);
-    }
-  }
-
-  getQueueStatus() {
-    const unsynced = this.syncQueue.filter(entry => !entry.synced).length;
-    const total = this.syncQueue.length;
+  async syncOfflineData(): Promise<SyncResult> {
+    const result: SyncResult = { success: 0, failed: 0, errors: [] };
     
+    try {
+      const entries = await this.getUnsynced();
+      
+      for (const entry of entries) {
+        try {
+          await this.syncEntry(entry);
+          await this.markAsSynced(entry.id);
+          result.success++;
+        } catch (error) {
+          result.failed++;
+          result.errors.push(`Failed to sync ${entry.type}: ${error}`);
+          
+          // Increment retry count
+          await this.incrementRetryCount(entry.id);
+        }
+      }
+    } catch (error) {
+      result.errors.push(`Sync process failed: ${error}`);
+    }
+    
+    return result;
+  }
+
+  private async syncEntry(entry: OfflineEntry): Promise<void> {
+    switch (entry.type) {
+      case 'food_log':
+        return this.syncFoodLog(entry.data);
+      case 'water_intake':
+        return this.syncWaterIntake(entry.data);
+      case 'exercise':
+        return this.syncExercise(entry.data);
+      default:
+        throw new Error(`Unknown entry type: ${entry.type}`);
+    }
+  }
+
+  private async syncFoodLog(data: any): Promise<void> {
+    const { error } = await supabase
+      .from('food_logs')
+      .insert(data);
+    
+    if (error) throw error;
+  }
+
+  private async syncWaterIntake(data: any): Promise<void> {
+    const { error } = await supabase
+      .from('water_intake')
+      .insert(data);
+    
+    if (error) throw error;
+  }
+
+  private async syncExercise(data: any): Promise<void> {
+    const { error } = await supabase
+      .from('exercises')
+      .insert(data);
+    
+    if (error) throw error;
+  }
+
+  private async incrementRetryCount(id: string): Promise<void> {
+    if (!this.db) return;
+    
+    return new Promise((resolve, reject) => {
+      const transaction = this.db!.transaction(['entries'], 'readwrite');
+      const store = transaction.objectStore('entries');
+      const getRequest = store.get(id);
+      
+      getRequest.onsuccess = () => {
+        const entry = getRequest.result;
+        if (entry && entry.retryCount < this.maxRetries) {
+          entry.retryCount++;
+          const putRequest = store.put(entry);
+          putRequest.onsuccess = () => resolve();
+          putRequest.onerror = () => reject(putRequest.error);
+        } else {
+          resolve();
+        }
+      };
+      
+      getRequest.onerror = () => reject(getRequest.error);
+    });
+  }
+
+  getQueueStatus(): QueueStatus {
     return {
-      unsynced,
-      total,
-      isOnline: this.isOnline,
-      syncInProgress: this.syncInProgress
+      total: 0, // Will be updated by useEnhancedOffline hook
+      unsynced: 0, // Will be updated by useEnhancedOffline hook
+      isOnline: navigator.onLine
     };
   }
 
-  clearSyncedEntries() {
-    this.syncQueue = this.syncQueue.filter(entry => !entry.synced);
-    this.saveOfflineData();
+  clearSyncedEntries(): void {
+    if (!this.db) return;
+    
+    const transaction = this.db.transaction(['entries'], 'readwrite');
+    const store = transaction.objectStore('entries');
+    const index = store.index('synced');
+    const request = index.openCursor(true);
+    
+    request.onsuccess = (event) => {
+      const cursor = (event.target as IDBRequest).result;
+      if (cursor) {
+        cursor.delete();
+        cursor.continue();
+      }
+    };
   }
 }
 
-export const offlineManager = OfflineManager.getInstance();
+export const offlineManager = new OfflineManager();
