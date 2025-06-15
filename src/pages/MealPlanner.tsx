@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,6 +8,8 @@ import { Calendar, Plus, Trash2, CalendarDays } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { SmartMealPlanner } from '@/components/MealPlanning/SmartMealPlanner';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface MealPlan {
   id: string;
@@ -177,126 +178,139 @@ const MealPlanner = () => {
         </h1>
       </div>
 
-      {/* Create New Meal Plan */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Create New Meal Plan</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input
-              placeholder="Meal plan name"
-              value={newPlan.name}
-              onChange={(e) => setNewPlan({ ...newPlan, name: e.target.value })}
-            />
-            <Textarea
-              placeholder="Description (optional)"
-              value={newPlan.description}
-              onChange={(e) => setNewPlan({ ...newPlan, description: e.target.value })}
-            />
-            <Input
-              type="date"
-              placeholder="Start date"
-              value={newPlan.start_date}
-              onChange={(e) => setNewPlan({ ...newPlan, start_date: e.target.value })}
-            />
-            <Input
-              type="date"
-              placeholder="End date"
-              value={newPlan.end_date}
-              onChange={(e) => setNewPlan({ ...newPlan, end_date: e.target.value })}
-            />
-          </div>
-          <Button onClick={createMealPlan} disabled={loading}>
-            <Plus className="h-4 w-4 mr-2" />
-            Create Meal Plan
-          </Button>
-        </CardContent>
-      </Card>
+      <Tabs defaultValue="ai-planner" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="ai-planner">AI Meal Planner</TabsTrigger>
+          <TabsTrigger value="manual-planner">Manual Planner</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="ai-planner" className="space-y-6">
+          <SmartMealPlanner />
+        </TabsContent>
+        
+        <TabsContent value="manual-planner" className="space-y-6">
+          {/* Create New Meal Plan */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Create New Meal Plan</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Input
+                  placeholder="Meal plan name"
+                  value={newPlan.name}
+                  onChange={(e) => setNewPlan({ ...newPlan, name: e.target.value })}
+                />
+                <Textarea
+                  placeholder="Description (optional)"
+                  value={newPlan.description}
+                  onChange={(e) => setNewPlan({ ...newPlan, description: e.target.value })}
+                />
+                <Input
+                  type="date"
+                  placeholder="Start date"
+                  value={newPlan.start_date}
+                  onChange={(e) => setNewPlan({ ...newPlan, start_date: e.target.value })}
+                />
+                <Input
+                  type="date"
+                  placeholder="End date"
+                  value={newPlan.end_date}
+                  onChange={(e) => setNewPlan({ ...newPlan, end_date: e.target.value })}
+                />
+              </div>
+              <Button onClick={createMealPlan} disabled={loading}>
+                <Plus className="h-4 w-4 mr-2" />
+                Create Meal Plan
+              </Button>
+            </CardContent>
+          </Card>
 
-      {/* Meal Plans List */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Your Meal Plans</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {mealPlans.length === 0 ? (
-            <p className="text-muted-foreground">No meal plans created yet.</p>
-          ) : (
-            <div className="grid gap-4">
-              {mealPlans.map((plan) => (
-                <div key={plan.id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div>
-                    <h3 className="font-medium">{plan.name}</h3>
-                    <p className="text-sm text-muted-foreground">{plan.description}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {plan.start_date} to {plan.end_date}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {plan.is_active && <Badge>Active</Badge>}
-                    {!plan.is_active && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => activatePlan(plan.id)}
-                        disabled={loading}
-                      >
-                        Activate
-                      </Button>
-                    )}
-                  </div>
+          {/* Meal Plans List */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Your Meal Plans</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {mealPlans.length === 0 ? (
+                <p className="text-muted-foreground">No meal plans created yet.</p>
+              ) : (
+                <div className="grid gap-4">
+                  {mealPlans.map((plan) => (
+                    <div key={plan.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div>
+                        <h3 className="font-medium">{plan.name}</h3>
+                        <p className="text-sm text-muted-foreground">{plan.description}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {plan.start_date} to {plan.end_date}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {plan.is_active && <Badge>Active</Badge>}
+                        {!plan.is_active && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => activatePlan(plan.id)}
+                            disabled={loading}
+                          >
+                            Activate
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+              )}
+            </CardContent>
+          </Card>
 
-      {/* Active Meal Plan Schedule */}
-      {activePlan && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5" />
-              {activePlan.name} - Weekly Schedule
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
-              {DAYS_OF_WEEK.map((day, index) => (
-                <div key={day} className="border rounded-lg p-3">
-                  <h4 className="font-medium text-center mb-3">{day}</h4>
-                  <div className="space-y-2">
-                    {MEAL_TYPES.map((mealType) => {
-                      const meal = getMealsForDay(index).find(item => item.meal_type === mealType);
-                      return (
-                        <div key={mealType} className="text-sm">
-                          <div className="font-medium capitalize text-muted-foreground">{mealType}</div>
-                          {meal ? (
-                            <div className="mt-1 p-2 bg-muted rounded text-xs">
-                              {meal.recipe_title}
-                              {meal.recipe_calories && (
-                                <div className="text-muted-foreground">
-                                  {meal.recipe_calories} cal
+          {/* Active Meal Plan Schedule */}
+          {activePlan && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="h-5 w-5" />
+                  {activePlan.name} - Weekly Schedule
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
+                  {DAYS_OF_WEEK.map((day, index) => (
+                    <div key={day} className="border rounded-lg p-3">
+                      <h4 className="font-medium text-center mb-3">{day}</h4>
+                      <div className="space-y-2">
+                        {MEAL_TYPES.map((mealType) => {
+                          const meal = getMealsForDay(index).find(item => item.meal_type === mealType);
+                          return (
+                            <div key={mealType} className="text-sm">
+                              <div className="font-medium capitalize text-muted-foreground">{mealType}</div>
+                              {meal ? (
+                                <div className="mt-1 p-2 bg-muted rounded text-xs">
+                                  {meal.recipe_title}
+                                  {meal.recipe_calories && (
+                                    <div className="text-muted-foreground">
+                                      {meal.recipe_calories} cal
+                                    </div>
+                                  )}
+                                </div>
+                              ) : (
+                                <div className="mt-1 p-2 border-2 border-dashed border-muted rounded text-xs text-muted-foreground">
+                                  Add meal
                                 </div>
                               )}
                             </div>
-                          ) : (
-                            <div className="mt-1 p-2 border-2 border-dashed border-muted rounded text-xs text-muted-foreground">
-                              Add meal
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

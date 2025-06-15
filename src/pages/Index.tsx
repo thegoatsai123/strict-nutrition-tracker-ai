@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,6 +16,7 @@ import { Link } from "react-router-dom";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useChat } from "@/hooks/useChat";
 import { useToast } from "@/hooks/use-toast";
+import { NutritionCoach } from '@/components/Chat/NutritionCoach';
 
 const Index = () => {
   const [showBarcodeScanner, setShowBarcodeScanner] = useState(false);
@@ -58,6 +58,16 @@ const Index = () => {
     setShowPhotoRecognition(false);
     // Here you would typically add the recognized food to the log
   };
+
+  // Mock current nutrition data - in a real app this would come from today's logged foods
+  const currentNutrition = {
+    calories: 1650,
+    protein: 120,
+    carbs: 180,
+    fat: 65
+  };
+
+  const userGoals = ['Weight loss', 'Muscle building', 'Better energy'];
 
   return (
     <div className="container mx-auto p-6 space-y-6 animate-fade-in-scale">
@@ -147,12 +157,20 @@ const Index = () => {
         <EnhancedDashboard />
       </div>
 
+      {/* AI Nutrition Coach */}
+      <div className="animate-slide-in-up" style={{ animationDelay: '400ms' }}>
+        <NutritionCoach 
+          userGoals={userGoals}
+          currentNutrition={currentNutrition}
+        />
+      </div>
+
       {/* Quick Actions & Trackers */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="animate-slide-in-up" style={{ animationDelay: '400ms' }}>
+        <div className="animate-slide-in-up" style={{ animationDelay: '500ms' }}>
           <WaterTracker />
         </div>
-        <div className="animate-slide-in-up" style={{ animationDelay: '500ms' }}>
+        <div className="animate-slide-in-up" style={{ animationDelay: '600ms' }}>
           <ExerciseTracker />
         </div>
       </div>
