@@ -62,14 +62,19 @@ const Profile = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const updatedData = {
-      ...formData,
+      name: formData.name,
       age: formData.age ? parseInt(formData.age) : undefined,
       weight: formData.weight ? parseFloat(formData.weight) : undefined,
       height: formData.height ? parseFloat(formData.height) : undefined,
+      gender: formData.gender as 'male' | 'female' | 'other' | undefined,
+      activity_level: formData.activity_level as 'sedentary' | 'lightly_active' | 'moderately_active' | 'very_active' | 'extremely_active' | undefined,
+      diet_type: formData.diet_type as 'none' | 'vegetarian' | 'vegan' | 'keto' | 'paleo' | undefined,
       daily_calories: formData.daily_calories ? parseInt(formData.daily_calories) : undefined,
       protein_goal: formData.protein_goal ? parseInt(formData.protein_goal) : undefined,
       carbs_goal: formData.carbs_goal ? parseInt(formData.carbs_goal) : undefined,
       fat_goal: formData.fat_goal ? parseInt(formData.fat_goal) : undefined,
+      allergies: formData.allergies,
+      disliked_ingredients: formData.disliked_ingredients
     };
     updateProfile(updatedData);
   };
