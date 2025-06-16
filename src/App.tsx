@@ -21,6 +21,7 @@ const Community = lazy(() => import('@/pages/Community'));
 const Recipes = lazy(() => import('@/pages/Recipes'));
 const About = lazy(() => import('@/pages/About'));
 const Demo = lazy(() => import('@/pages/Demo'));
+const Profile = lazy(() => import('@/pages/Profile'));
 const NotFound = lazy(() => import('@/pages/NotFound'));
 
 const queryClient = new QueryClient({
@@ -111,6 +112,14 @@ function App() {
                   <Header />
                   <Suspense fallback={<PageLoader />}>
                     <Settings />
+                  </Suspense>
+                </AuthGuard>
+              } />
+              <Route path="/profile" element={
+                <AuthGuard>
+                  <Header />
+                  <Suspense fallback={<PageLoader />}>
+                    <Profile />
                   </Suspense>
                 </AuthGuard>
               } />

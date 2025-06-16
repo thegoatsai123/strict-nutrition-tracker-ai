@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Settings, LogOut } from 'lucide-react';
+import { Settings, LogOut, User } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 
@@ -55,6 +55,13 @@ export const Header = () => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56 bg-background border shadow-lg" align="end" forceMount>
+                <DropdownMenuItem 
+                  onClick={() => navigate('/profile')}
+                  className="hover:bg-accent transition-colors duration-200"
+                >
+                  <User className="mr-2 h-4 w-4" />
+                  <span>Profile</span>
+                </DropdownMenuItem>
                 <DropdownMenuItem 
                   onClick={() => navigate('/settings')}
                   className="hover:bg-accent transition-colors duration-200"
