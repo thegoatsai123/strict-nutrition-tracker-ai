@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
@@ -24,10 +23,16 @@ export const ActionButtons = () => {
   };
 
   const handleFoodRecognized = (predictions: Array<{ className: string; confidence: number }>) => {
-    toast({
-      title: "Food Recognized",
-      description: `Found: ${predictions[0]?.className}`,
-    });
+    if (predictions.length > 0) {
+      toast({
+        title: "Food Recognition Complete! 🎉",
+        description: `Recognized: ${predictions[0].className}. Check the results to add to your food log.`,
+      });
+    }
+    // Keep dialog open so user can see the results and add to log
+  };
+
+  const handleClosePhotoRecognition = () => {
     setShowPhotoRecognition(false);
   };
 
@@ -46,7 +51,7 @@ export const ActionButtons = () => {
             Scan Barcode
           </Button>
         </DialogTrigger>
-        <DialogContent>
+        <DialogContent className="sm:max-w-md">
           <BarcodeScanner 
             onScan={handleBarcodeScanned}
             onClose={() => setShowBarcodeScanner(false)}
@@ -61,10 +66,10 @@ export const ActionButtons = () => {
             Photo Recognition
           </Button>
         </DialogTrigger>
-        <DialogContent>
+        <DialogContent className="sm:max-w-2xl">
           <PhotoFoodRecognition 
             onFoodRecognized={handleFoodRecognized}
-            onClose={() => setShowPhotoRecognition(false)}
+            onClose={handleClosePhotoRecognition}
           />
         </DialogContent>
       </Dialog>

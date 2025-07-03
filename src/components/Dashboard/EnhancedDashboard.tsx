@@ -7,6 +7,7 @@ import { RealTimeDashboard } from '../RealTimeDashboard/RealTimeDashboard';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { LoadingSpinner } from '@/components/ui/loading-states';
+import { useToast } from '@/hooks/use-toast';
 
 interface DashboardData {
   nutrition: {
@@ -31,6 +32,7 @@ export const EnhancedDashboard: React.FC = () => {
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
+  const { toast } = useToast();
 
   const loadDashboardData = async () => {
     if (!user) return;
@@ -38,39 +40,68 @@ export const EnhancedDashboard: React.FC = () => {
     try {
       const today = new Date().toISOString().split('T')[0];
       
-      // Load nutrition data
-      const { data: foodLogs } = await supabase
+      // Load nutrition data for today
+      const { data: foodLogs, error: foodError } = await supabase
         .from('food_logs')
         .select('*')
         .eq('user_id', user.id)
         .gte('consumed_at', `${today}T00:00:00`)
         .lt('consumed_at', `${today}T23:59:59`);
 
-      // Load nutrition goals
-      const { data: goals } = await supabase
+      if (foodError) {
+        console.error('Error loading food logs:', foodError);
+      }
+
+      // Load user's nutrition goals
+      const { data: goals, error: goalsError } = await supabase
         .from('nutrition_goals')
         .select('*')
         .eq('user_id', user.id)
         .eq('is_active', true)
-        .single();
+        .order('created_at', { ascending: false })
+        .limit(1);
 
-      // Load water intake
-      const { data: waterData } = await supabase
+      if (goalsError) {
+        console.error('Error loading nutrition goals:', goalsError);
+      }
+
+      // Load water intake for today
+      const { data: waterData, error: waterError } = await supabase
         .from('water_intake')
         .select('*')
         .eq('user_id', user.id)
         .eq('date', today)
         .single();
 
-      // Calculate nutrition totals
+      if (waterError && waterError.code !== 'PGRST116') {
+        console.error('Error loading water data:', waterError);
+      }
+
+      // Calculate nutrition totals from actual food logs
       const nutritionTotals = foodLogs?.reduce((acc, log) => ({
-        calories: acc.calories + (log.calories || 0),
-        protein: acc.protein + (log.protein || 0),
-        carbs: acc.carbs + (log.carbohydrates || 0),
-        fat: acc.fat + (log.fat || 0),
+        calories: acc.calories + (Number(log.calories) || 0),
+        protein: acc.protein + (Number(log.protein) || 0),
+        carbs: acc.carbs + (Number(log.carbohydrates) || 0),
+        fat: acc.fat + (Number(log.fat) || 0),
       }), { calories: 0, protein: 0, carbs: 0, fat: 0 }) || { calories: 0, protein: 0, carbs: 0, fat: 0 };
 
-      // Calculate streaks (simplified - you might want to make this more sophisticated)
+      // Get user's profile for default goals
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('daily_calories, protein_goal, carbs_goal, fat_goal')
+        .eq('id', user.id)
+        .single();
+
+      // Use goals from nutrition_goals table or profile, with fallback defaults
+      const currentGoals = goals?.[0] || {};
+      const defaultGoals = {
+        calories: currentGoals.daily_calories || profile?.daily_calories || 2000,
+        protein: currentGoals.daily_protein || profile?.protein_goal || 150,
+        carbs: currentGoals.daily_carbs || profile?.carbs_goal || 250,
+        fat: currentGoals.daily_fat || profile?.fat_goal || 65,
+      };
+
+      // Calculate streaks from actual data
       const { data: recentLogs } = await supabase
         .from('food_logs')
         .select('consumed_at')
@@ -78,14 +109,14 @@ export const EnhancedDashboard: React.FC = () => {
         .gte('consumed_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
         .order('consumed_at', { ascending: false });
 
-      const streakData = calculateStreak(recentLogs);
+      const streakData = calculateStreakFromLogs(recentLogs || []);
 
       setDashboardData({
         nutrition: {
-          calories: { current: nutritionTotals.calories, goal: goals?.daily_calories || 2000 },
-          protein: { current: nutritionTotals.protein, goal: goals?.daily_protein || 150 },
-          carbs: { current: nutritionTotals.carbs, goal: goals?.daily_carbs || 250 },
-          fat: { current: nutritionTotals.fat, goal: goals?.daily_fat || 65 },
+          calories: { current: nutritionTotals.calories, goal: defaultGoals.calories },
+          protein: { current: nutritionTotals.protein, goal: defaultGoals.protein },
+          carbs: { current: nutritionTotals.carbs, goal: defaultGoals.carbs },
+          fat: { current: nutritionTotals.fat, goal: defaultGoals.fat },
         },
         water: {
           current: waterData?.amount_ml || 0,
@@ -96,31 +127,41 @@ export const EnhancedDashboard: React.FC = () => {
       });
     } catch (error) {
       console.error('Error loading dashboard data:', error);
+      toast({
+        title: "Error Loading Data",
+        description: "Could not load dashboard data. Please refresh the page.",
+        variant: "destructive"
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
-  const calculateStreak = (logs: any[] | null) => {
+  const calculateStreakFromLogs = (logs: any[]) => {
     if (!logs || logs.length === 0) {
       return { current: 0, longest: 0 };
     }
 
-    // Simple streak calculation - count consecutive days with logs
-    const dates = [...new Set(logs.map(log => log.consumed_at.split('T')[0]))];
+    // Get unique dates from logs
+    const dates = [...new Set(logs.map(log => log.consumed_at.split('T')[0]))].sort().reverse();
+    
     let currentStreak = 0;
     let longestStreak = 0;
-    let tempStreak = 1;
+    let tempStreak = 0;
 
     const today = new Date().toISOString().split('T')[0];
+    
+    // Check if user logged food today
     if (dates.includes(today)) {
       currentStreak = 1;
+      tempStreak = 1;
     }
 
+    // Calculate consecutive days
     for (let i = 1; i < dates.length; i++) {
-      const prevDate = new Date(dates[i - 1]);
-      const currDate = new Date(dates[i]);
-      const diffTime = Math.abs(currDate.getTime() - prevDate.getTime());
+      const currentDate = new Date(dates[i - 1]);
+      const nextDate = new Date(dates[i]);
+      const diffTime = currentDate.getTime() - nextDate.getTime();
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
       if (diffDays === 1) {
@@ -148,7 +189,7 @@ export const EnhancedDashboard: React.FC = () => {
     const newAmount = dashboardData.water.current + amount;
 
     try {
-      await supabase
+      const { error } = await supabase
         .from('water_intake')
         .upsert({
           user_id: user.id,
@@ -156,6 +197,8 @@ export const EnhancedDashboard: React.FC = () => {
           amount_ml: newAmount,
           goal_ml: dashboardData.water.goal,
         });
+
+      if (error) throw error;
 
       setDashboardData({
         ...dashboardData,
@@ -165,8 +208,21 @@ export const EnhancedDashboard: React.FC = () => {
           lastIntake: new Date(),
         },
       });
+
+      toast({
+        title: "Water Logged! 💧",
+        description: `Added ${amount}ml to your daily intake.`
+      });
+
+      // Trigger real-time update
+      window.dispatchEvent(new CustomEvent('water-intake-updated'));
     } catch (error) {
       console.error('Error updating water intake:', error);
+      toast({
+        title: "Error",
+        description: "Failed to log water intake. Please try again.",
+        variant: "destructive"
+      });
     }
   };
 
@@ -195,7 +251,7 @@ export const EnhancedDashboard: React.FC = () => {
   if (!dashboardData) {
     return (
       <div className="text-center p-8 text-muted-foreground">
-        Failed to load dashboard data
+        <p>No data available. Start logging your meals to see your progress!</p>
       </div>
     );
   }
