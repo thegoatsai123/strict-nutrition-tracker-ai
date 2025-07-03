@@ -1,6 +1,9 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { rateLimiter } from '@/utils/security';
+import type { Database } from '@/integrations/supabase/types';
+
+type TableName = keyof Database['public']['Tables'];
 
 export class SecureApiService {
   private static instance: SecureApiService;
@@ -70,7 +73,7 @@ export class SecureApiService {
 
   // Secure database operations with validation
   async insertRecord(
-    table: string, 
+    table: TableName, 
     data: Record<string, any>, 
     userId: string,
     validateFn?: (data: any) => boolean
@@ -108,7 +111,7 @@ export class SecureApiService {
   }
 
   async updateRecord(
-    table: string,
+    table: TableName,
     id: string,
     data: Record<string, any>,
     userId: string
@@ -124,13 +127,13 @@ export class SecureApiService {
       updated_at: new Date().toISOString()
     };
 
-    const { data: result, error } = await supabase
-      .from(table)
+    const { data: result, error } = await (supabase
+      .from(table as any)
       .update(secureData)
       .eq('id', id)
       .eq('user_id', userId) // Ensure user can only update their own records
       .select()
-      .single();
+      .single());
 
     if (error) {
       console.error(`Update error for table ${table}:`, error);
@@ -140,7 +143,7 @@ export class SecureApiService {
     return result;
   }
 
-  async deleteRecord(table: string, id: string, userId: string): Promise<void> {
+  async deleteRecord(table: TableName, id: string, userId: string): Promise<void> {
     // Validate user session
     const { data: { session } } = await supabase.auth.getSession();
     if (!session || session.user.id !== userId) {
@@ -148,7 +151,7 @@ export class SecureApiService {
     }
 
     const { error } = await supabase
-      .from(table)
+      .from(table as any)
       .delete()
       .eq('id', id)
       .eq('user_id', userId); // Ensure user can only delete their own records
@@ -160,7 +163,7 @@ export class SecureApiService {
   }
 
   async fetchUserRecords(
-    table: string,
+    table: TableName,
     userId: string,
     options?: {
       columns?: string;
@@ -176,7 +179,7 @@ export class SecureApiService {
     }
 
     let query = supabase
-      .from(table)
+      .from(table as any)
       .select(options?.columns || '*')
       .eq('user_id', userId);
 

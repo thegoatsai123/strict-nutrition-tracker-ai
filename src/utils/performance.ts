@@ -1,4 +1,6 @@
 
+import React from 'react';
+
 /**
  * Performance monitoring and optimization utilities
  */
@@ -27,10 +29,11 @@ class PerformanceMonitor {
           const entries = list.getEntries();
           entries.forEach((entry) => {
             if (entry.entryType === 'navigation') {
+              const navEntry = entry as PerformanceNavigationTiming;
               console.log('Navigation timing:', {
-                domContentLoaded: entry.domContentLoadedEventEnd - entry.domContentLoadedEventStart,
-                loadComplete: entry.loadEventEnd - entry.loadEventStart,
-                totalTime: entry.loadEventEnd - entry.fetchStart
+                domContentLoaded: navEntry.domContentLoadedEventEnd - navEntry.domContentLoadedEventStart,
+                loadComplete: navEntry.loadEventEnd - navEntry.loadEventStart,
+                totalTime: navEntry.loadEventEnd - navEntry.fetchStart
               });
             }
           });
@@ -169,9 +172,14 @@ export const lazy = <T extends React.ComponentType<any>>(
 ) => {
   const LazyComponent = React.lazy(importFunc);
   
-  return (props: React.ComponentProps<T>) => (
-    <React.Suspense fallback={fallback ? React.createElement(fallback) : <div>Loading...</div>}>
-      <LazyComponent {...props} />
-    </React.Suspense>
-  );
+  return (props: React.ComponentProps<T>) => 
+    React.createElement(
+      React.Suspense,
+      { 
+        fallback: fallback 
+          ? React.createElement(fallback) 
+          : React.createElement('div', null, 'Loading...')
+      },
+      React.createElement(LazyComponent, props)
+    );
 };
