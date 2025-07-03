@@ -22,6 +22,7 @@ const Recipes = lazy(() => import('@/pages/Recipes'));
 const About = lazy(() => import('@/pages/About'));
 const Demo = lazy(() => import('@/pages/Demo'));
 const Profile = lazy(() => import('@/pages/Profile'));
+const FutureFeatures = lazy(() => import('@/pages/FutureFeatures'));
 const NotFound = lazy(() => import('@/pages/NotFound'));
 
 const queryClient = new QueryClient({
@@ -144,6 +145,14 @@ function App() {
                   <Header />
                   <Suspense fallback={<PageLoader />}>
                     <Recipes />
+                  </Suspense>
+                </AuthGuard>
+              } />
+              <Route path="/future-features" element={
+                <AuthGuard>
+                  <Header />
+                  <Suspense fallback={<PageLoader />}>
+                    <FutureFeatures />
                   </Suspense>
                 </AuthGuard>
               } />
