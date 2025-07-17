@@ -93,12 +93,12 @@ export const EnhancedDashboard: React.FC = () => {
         .single();
 
       // Use goals from nutrition_goals table or profile, with fallback defaults
-      const currentGoals = goals?.[0] || {};
+      const currentGoals = goals && goals.length > 0 ? goals[0] : null;
       const defaultGoals = {
-        calories: currentGoals.daily_calories || profile?.daily_calories || 2000,
-        protein: currentGoals.daily_protein || profile?.protein_goal || 150,
-        carbs: currentGoals.daily_carbs || profile?.carbs_goal || 250,
-        fat: currentGoals.daily_fat || profile?.fat_goal || 65,
+        calories: currentGoals?.daily_calories || profile?.daily_calories || 2000,
+        protein: currentGoals?.daily_protein || profile?.protein_goal || 150,
+        carbs: currentGoals?.daily_carbs || profile?.carbs_goal || 250,
+        fat: currentGoals?.daily_fat || profile?.fat_goal || 65,
       };
 
       // Calculate streaks from actual data
